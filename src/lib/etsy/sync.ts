@@ -24,6 +24,7 @@ import {
   getListingInventory,
   getLiveListingQuantity,
   getShopReceipts,
+  getShopSections,
   isConnected,
   updateListingInventory,
 } from "./client";
@@ -66,25 +67,37 @@ function slugify(s: string): string {
  * seed the ledger quantity ("initial"). On subsequent runs we update content
  * only and leave inventory to the two-way flow.
  */
-export async function syncContentFromEtsy(): Promise<{ imported: number; updated: number }> {
+export async function syncContentFromEtsy(): Promise<{
+  imported: number;
+  updated: number;
+  archived: number;
+  collections: number;
+}> {
   if (!(await isConnected())) throw new EtsyNotConnectedError();
   let imported = 0;
   let updated = 0;
   let offset = 0;
 
+  // 1) Mirror Etsy shop sections -> site Collections, so every product lands in
+  //    the right category automatically (now and for future listings).
+  const sectionToCollection = await syncCollectionsFromEtsy();
+
+  // Track which Etsy listings we see this run so we can archive any that have
+  // disappeared from Etsy (deactivated/deleted) at the end.
+  const seenListingIds = new Set<string>();
+
   for (;;) {
     const page = await getActiveListings(100, offset);
     for (const listing of page.results) {
+      seenListingIds.add(String(listing.listing_id));
       const existing = await prisma.product.findUnique({
         where: { etsyListingId: String(listing.listing_id) },
         include: { variants: true },
       });
 
-      // Resolve collection from Etsy shop section.
+      // Resolve collection from the Etsy section -> collection map.
       const collection = listing.shop_section_id
-        ? await prisma.collection.findFirst({
-            where: { etsySectionId: String(listing.shop_section_id) },
-          })
+        ? sectionToCollection.get(String(listing.shop_section_id)) ?? null
         : null;
 
       const priceCents = listing.price
@@ -191,9 +204,65 @@ export async function syncContentFromEtsy(): Promise<{ imported: number; updated
     if (offset >= page.count) break;
   }
 
+  // 2) Auto-archive: any previously-imported product whose Etsy listing is no
+  //    longer active (deactivated/deleted/sold-out-and-ended) gets hidden from
+  //    the storefront. We never delete — just set status=archived so its history
+  //    and inventory ledger are preserved. Reactivating on Etsy un-archives it.
+  let archived = 0;
+  const liveProducts = await prisma.product.findMany({
+    where: { etsyListingId: { not: null }, status: { not: "archived" } },
+    select: { id: true, etsyListingId: true },
+  });
+  for (const p of liveProducts) {
+    if (p.etsyListingId && !seenListingIds.has(p.etsyListingId)) {
+      await prisma.product.update({ where: { id: p.id }, data: { status: "archived" } });
+      archived++;
+    }
+  }
+
+  const collections = sectionToCollection.size;
   await touchState({ lastContentSyncAt: new Date() });
-  await syncLog("etsy_to_site", "content_sync", `Imported ${imported}, updated ${updated}`);
-  return { imported, updated };
+  await syncLog(
+    "etsy_to_site",
+    "content_sync",
+    `Imported ${imported}, updated ${updated}, archived ${archived}; ${collections} collections mapped`
+  );
+  return { imported, updated, archived, collections };
+}
+
+// Mirror Etsy shop sections into site Collections. Returns a map of
+// etsy section id -> Collection record so the caller can categorize listings.
+// New sections become new collections automatically; existing ones are matched
+// on etsySectionId and kept name-synced.
+async function syncCollectionsFromEtsy() {
+  const map = new Map<string, { id: string; slug: string; name: string }>();
+  let sections;
+  try {
+    sections = await getShopSections();
+  } catch (err) {
+    await syncLog("etsy_to_site", "sections_sync", `Could not fetch sections: ${String(err)}`, "warn");
+    return map;
+  }
+  for (const s of sections.results) {
+    const sectionId = String(s.shop_section_id);
+    const existing = await prisma.collection.findFirst({ where: { etsySectionId: sectionId } });
+    const collection = existing
+      ? await prisma.collection.update({
+          where: { id: existing.id },
+          data: { name: s.title, sortOrder: s.rank ?? existing.sortOrder },
+        })
+      : await prisma.collection.create({
+          data: {
+            // Keep slug stable & unique even if two sections share a title.
+            slug: `${slugify(s.title)}-${sectionId}`,
+            name: s.title,
+            etsySectionId: sectionId,
+            sortOrder: s.rank ?? 100,
+          },
+        });
+    map.set(sectionId, collection);
+  }
+  return map;
 }
 
 // -------- INVENTORY: Etsy sale -> Site (receipt polling, idempotent) -------

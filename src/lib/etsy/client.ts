@@ -178,6 +178,19 @@ export async function getActiveListings(limit = 100, offset = 0) {
   );
 }
 
+export interface EtsySection {
+  shop_section_id: number;
+  title: string;
+  rank?: number;
+}
+
+/** Shop sections — mapped to site Collections during content sync. */
+export async function getShopSections() {
+  return etsyJson<{ count: number; results: EtsySection[] }>(
+    `/shops/${shopId()}/sections`
+  );
+}
+
 export async function getListing(listingId: number | string) {
   return etsyJson<EtsyListing>(`/listings/${listingId}?includes=Images,Inventory`);
 }

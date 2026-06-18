@@ -3,6 +3,22 @@
 All significant decisions and build steps for the MadeByKreative storefront. Entries note
 where judgment was exercised and why.
 
+## [0.1.2] — Full content sync: collections + auto-archive
+
+Made Etsy → site content sync truly complete so new products and photos flow in
+automatically and land in the right place:
+
+- **Etsy sections → site collections.** `syncContentFromEtsy` now mirrors the shop's
+  Etsy sections into Collections (`getShopSections`, new `syncCollectionsFromEtsy`),
+  matching on `etsySectionId` and creating new collections as sections appear. Every
+  imported (and future) listing is auto-categorized from its `shop_section_id`. Result:
+  13/16 products categorized (the other 3 are unsectioned on Etsy itself).
+- **Auto-archive removed listings.** Products whose Etsy listing is no longer in the
+  active set are set `status=archived` (hidden from the storefront) rather than deleted,
+  preserving their inventory ledger; reactivating on Etsy un-archives them.
+- Photos already imported correctly (full-res `i.etsystatic.com` URLs via next/image).
+- One-time cleanup: removed the 9 leftover empty seed collections.
+
 ## [0.1.1] — Live Etsy integration (first real connect)
 
 Connected the real MadeByKreative Etsy shop (shop_id 23502696) end to end and fixed
