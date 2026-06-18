@@ -3,6 +3,26 @@
 All significant decisions and build steps for the MadeByKreative storefront. Entries note
 where judgment was exercised and why.
 
+## [0.1.1] — Live Etsy integration (first real connect)
+
+Connected the real MadeByKreative Etsy shop (shop_id 23502696) end to end and fixed
+three issues found only against the live API:
+
+- **Etsy `x-api-key` format.** The live API rejects the bare keystring with
+  *"Shared secret is required in x-api-key header."* — it requires the combined value
+  `keystring:shared_secret`. Fixed in `src/lib/etsy/client.ts` (`apiKeyHeader()`). OAuth
+  token exchange still uses the bare keystring as `client_id`.
+- **First-run receipt baseline.** Imported quantities already reflect all past Etsy sales,
+  so the initial receipt poll must NOT decrement for historical receipts (that would
+  double-count). `pollEtsyReceipts` now detects the first run, marks recent receipts as
+  processed, sets the cursor forward, and decrements nothing. Verified: 50 historical
+  receipts baselined, 0 erroneous decrements; site qty matched Etsy on all 41 variants.
+- **Transaction timeout.** Per-receipt `$transaction` now uses `{ timeout: 15000 }` (SQLite
+  was hitting the 5s default). Manual "Sync now" forces a content import; the cron stays
+  inventory-only and content refresh is throttled to ≤1×/hour to respect Etsy's call budget.
+
+Also: removed the 17 isSeed sample products now that the 16 real listings are imported.
+
 ## [0.1.0] — Initial autonomous build
 
 ### Foundation

@@ -118,6 +118,15 @@ export class EtsyNotConnectedError extends Error {
   }
 }
 
+// Etsy expects the x-api-key header in the format "keystring:shared_secret"
+// (the API rejects the bare keystring with "Shared secret is required in
+// x-api-key header"). Falls back to the bare keystring if no secret is set.
+function apiKeyHeader(): string {
+  const key = process.env.ETSY_KEYSTRING || "";
+  const secret = process.env.ETSY_SHARED_SECRET || "";
+  return secret ? `${key}:${secret}` : key;
+}
+
 async function etsyFetch(path: string, init: RequestInit = {}, attempt = 0): Promise<Response> {
   const token = await getAccessToken();
   if (!token) throw new EtsyNotConnectedError();
@@ -125,7 +134,7 @@ async function etsyFetch(path: string, init: RequestInit = {}, attempt = 0): Pro
   const res = await fetch(`${ETSY_API_BASE}${path}`, {
     ...init,
     headers: {
-      "x-api-key": process.env.ETSY_KEYSTRING || "",
+      "x-api-key": apiKeyHeader(),
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
       ...(init.headers || {}),

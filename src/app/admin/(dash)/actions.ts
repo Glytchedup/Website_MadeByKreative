@@ -110,8 +110,12 @@ export async function saveSetting(formData: FormData) {
 
 export async function triggerSync() {
   await requireAdmin();
-  await runFullSync();
+  // Manual "Sync now" forces a content import (pull listings) in addition to the
+  // inventory sync, so the first connect and any on-demand run mirror Etsy fully.
+  await runFullSync({ forceContent: true });
   revalidatePath("/admin/sync");
+  revalidatePath("/shop");
+  revalidatePath("/");
 }
 
 export async function resolveConflict(formData: FormData) {

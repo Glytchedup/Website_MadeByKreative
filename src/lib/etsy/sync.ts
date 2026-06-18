@@ -203,14 +203,36 @@ export async function syncContentFromEtsy(): Promise<{ imported: number; updated
  * a ProcessedEtsyReceipt row (keyed on receipt_id) is written inside the same
  * transaction, so re-polling the same receipt is a no-op.
  */
-export async function pollEtsyReceipts(): Promise<{ processed: number }> {
+export async function pollEtsyReceipts(): Promise<{ processed: number; baseline?: boolean }> {
   if (!(await isConnected())) throw new EtsyNotConnectedError();
   const state = await prisma.etsySyncState.findUnique({ where: { id: "singleton" } });
+  const firstRun = state?.lastReceiptCreatedTs == null;
   const minCreated = state?.lastReceiptCreatedTs ?? undefined;
 
   const page = await getShopReceipts(minCreated, 50);
   let processed = 0;
   let maxTs = state?.lastReceiptCreatedTs ?? 0;
+
+  // FIRST-RUN BASELINE: the quantities we just imported from Etsy already reflect
+  // every past sale, so we must NOT decrement for historical receipts. Instead we
+  // record them as processed and set the cursor forward, so only sales that happen
+  // AFTER connecting are applied. Without this, the initial sync double-counts.
+  if (firstRun) {
+    for (const receipt of page.results) {
+      maxTs = Math.max(maxTs, receipt.created_timestamp);
+      await prisma.processedEtsyReceipt.create({
+        data: { receiptId: String(receipt.receipt_id), raw: "baseline (not decremented)" },
+      }).catch(() => {}); // ignore if somehow already present
+    }
+    const cursor = maxTs || Math.floor(Date.now() / 1000);
+    await touchState({ lastReceiptPollAt: new Date(), lastReceiptCreatedTs: cursor });
+    await syncLog(
+      "etsy_to_site",
+      "receipt_poll",
+      `Baseline established: ${page.results.length} historical receipt(s) marked processed (not decremented).`
+    );
+    return { processed: 0, baseline: true };
+  }
 
   for (const receipt of page.results) {
     maxTs = Math.max(maxTs, receipt.created_timestamp);
@@ -268,7 +290,7 @@ export async function pollEtsyReceipts(): Promise<{ processed: number }> {
           });
         }
       }
-    });
+    }, { timeout: 15000 }); // SQLite can be slow; give the txn headroom
     processed++;
   }
 
@@ -449,11 +471,34 @@ export async function jitEtsyStockOk(
 
 // -------- Full sync (cron entry point) -------------------------------------
 
-export async function runFullSync(): Promise<Record<string, unknown>> {
+// Content import is heavier than inventory polling (one listing fetch + images +
+// inventory per listing), so we DON'T run it every cron tick — that would blow
+// past Etsy's daily call budget. Instead it runs on first connect and then no
+// more often than this interval. Etsy's terms require content be < 6h stale, so
+// keep this comfortably under that.
+const CONTENT_REFRESH_MS = 60 * 60 * 1000; // 1 hour
+
+export async function runFullSync(
+  opts: { forceContent?: boolean } = {}
+): Promise<Record<string, unknown>> {
   if (!(await isConnected())) {
     return { connected: false, message: "Etsy not connected — sync skipped." };
   }
   const result: Record<string, unknown> = { connected: true };
+
+  // Content import (Etsy -> Site), throttled. Forced on a manual "Sync now".
+  const state = await prisma.etsySyncState.findUnique({ where: { id: "singleton" } });
+  const lastContent = state?.lastContentSyncAt?.getTime() ?? 0;
+  const contentStale = Date.now() - lastContent > CONTENT_REFRESH_MS;
+  if (opts.forceContent || contentStale) {
+    try {
+      result.content = await syncContentFromEtsy();
+    } catch (e) {
+      result.contentError = String(e);
+      await syncLog("etsy_to_site", "content_sync", String(e), "error");
+    }
+  }
+
   // Order matters: apply known sales (receipts) BEFORE reconciling deltas, so a
   // sale isn't misread as needing a restock. Then push any queued site changes.
   try {
