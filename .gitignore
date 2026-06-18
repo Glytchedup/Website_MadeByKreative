@@ -9,6 +9,15 @@ build/
 out/
 .next/
 .cache/
+next-env.d.ts
+*.tsbuildinfo
+
+# Prisma local database
+prisma/*.db
+prisma/*.db-journal
+*.db
+*.db-journal
+dev.db
 
 # Environment / secrets
 .env

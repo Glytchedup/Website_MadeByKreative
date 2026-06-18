@@ -1,0 +1,266 @@
+// MadeByKreative data model.
+//
+// ARCHITECTURE NOTE — Source of truth:
+// The site owns ONE authoritative inventory count, stored on `Variant.quantity`.
+// Every channel (this storefront + Etsy) is a *projection* of that number.
+// All changes to `Variant.quantity` MUST go through lib/inventory.ts so that:
+//   - the change is atomic (guarded decrement: `updateMany where quantity >= n`)
+//   - an append-only LedgerEntry audit row is written
+//   - low-stock / oversell conditions are detectable.
+// Never write Variant.quantity directly from feature code.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  // SQLite for zero-config local dev. For production set DATABASE_URL to Postgres
+  // and change provider to "postgresql" (no code changes required).
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Catalog
+// ---------------------------------------------------------------------------
+
+model Collection {
+  id             String    @id @default(cuid())
+  slug           String    @unique
+  name           String
+  description    String?
+  // Seasonal grouping label (e.g. "Halloween", "Christmas").
+  season         String?
+  heroImage      String?
+  sortOrder      Int       @default(100)
+  seoTitle       String?
+  seoDescription String?
+  // Etsy "section" id this collection maps to (content sync: Etsy -> Site).
+  etsySectionId  String?
+  products       Product[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model Product {
+  id             String      @id @default(cuid())
+  slug           String      @unique
+  title          String
+  description    String
+  // Lowest variant price in cents; used for "from $X" display & sorting.
+  basePriceCents Int
+  collectionId   String?
+  collection     Collection? @relation(fields: [collectionId], references: [id])
+  // JSON string array of image URLs.
+  images         String      @default("[]")
+  // JSON string array of tags (carried from Etsy keyword patterns for SEO).
+  tags           String      @default("[]")
+  featured       Boolean     @default(false)
+  bestSeller     Boolean     @default(false)
+  status         String      @default("active") // active | draft | archived
+  turnaround     String? // e.g. "Ships in 1-3 business days"
+  seoTitle       String?
+  seoDescription String?
+  // Content mirror from Etsy (one-way Etsy -> Site).
+  etsyListingId  String?     @unique
+  // Flag seed/sample data so the maker knows what to replace.
+  isSeed         Boolean     @default(false)
+  variants       Variant[]
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([collectionId])
+  @@index([status])
+}
+
+// A Variant is the unit that holds inventory. Single-option products get one
+// "Default" variant. Each variant is the join point to a specific Etsy offering.
+model Variant {
+  id            String   @id @default(cuid())
+  productId     String
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name          String   @default("Default") // e.g. "Mini", "Medium", "Regular"
+  sku           String?  @unique
+  priceCents    Int
+  // THE AUTHORITATIVE COUNT. Mutate only via lib/inventory.ts.
+  quantity      Int      @default(0)
+  // Etsy mapping (for two-way inventory sync). A listing may have variations;
+  // etsyProductId/etsyOfferingId identify the specific offering inside the listing.
+  etsyListingId  String?
+  etsyProductId  String?
+  etsyOfferingId String?
+  // Last quantity we observed on Etsy — used to compute deltas during polling
+  // and to distinguish a sale (qty dropped) from a restock (qty rose).
+  etsyLastSeenQty Int?
+  ledger        LedgerEntry[]
+  orderItems    OrderItem[]
+  conflicts     SyncConflict[]
+  pushes        EtsyPush[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([productId])
+  @@index([etsyListingId])
+}
+
+// Append-only audit of every inventory movement. The sum of deltas for a
+// variant should always equal Variant.quantity (invariant checked in smoke test).
+model LedgerEntry {
+  id          String   @id @default(cuid())
+  variantId   String
+  variant     Variant  @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  delta       Int // negative = sold/removed, positive = restock/correction
+  reason      String // site_sale | etsy_sale | manual_restock | manual_correction | import | reconciliation | initial
+  channel     String // site | etsy | admin | system
+  // Idempotency / traceability key: stripe session id, etsy receipt id, etc.
+  referenceId String?
+  note        String?
+  createdAt   DateTime @default(now())
+
+  @@index([variantId])
+  @@index([reason])
+  @@index([referenceId])
+}
+
+// ---------------------------------------------------------------------------
+// Orders (site channel)
+// ---------------------------------------------------------------------------
+
+model Order {
+  id              String      @id @default(cuid())
+  stripeSessionId String      @unique
+  email           String
+  status          String      @default("paid") // pending | paid | fulfilled | refunded | cancelled
+  totalCents      Int
+  currency        String      @default("usd")
+  shippingName    String?
+  shippingAddress String? // JSON
+  // True if a post-payment oversell was detected for this order (needs maker action).
+  oversellFlag    Boolean     @default(false)
+  items           OrderItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([status])
+}
+
+model OrderItem {
+  id            String  @id @default(cuid())
+  orderId       String
+  order         Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variantId     String
+  variant       Variant @relation(fields: [variantId], references: [id])
+  productTitle  String // snapshot at purchase time
+  variantName   String
+  quantity      Int
+  unitPriceCents Int
+
+  @@index([orderId])
+}
+
+// ---------------------------------------------------------------------------
+// Etsy sync infrastructure
+// ---------------------------------------------------------------------------
+
+// Singleton (id = "singleton") holding OAuth tokens for the Etsy app.
+model EtsyToken {
+  id           String   @id @default("singleton")
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  shopId       String?
+  scope        String?
+  updatedAt    DateTime @updatedAt
+}
+
+// Singleton (id = "singleton") holding sync cursors / timestamps.
+model EtsySyncState {
+  id                 String    @id @default("singleton")
+  lastContentSyncAt  DateTime?
+  lastReceiptPollAt  DateTime?
+  lastInventoryPollAt DateTime?
+  // Highest Etsy receipt timestamp processed (cursor for incremental polling).
+  lastReceiptCreatedTs Int?
+  updatedAt          DateTime  @updatedAt
+}
+
+// Idempotency table: one row per Etsy receipt we've already applied.
+// Keyed on Etsy receipt_id so re-polling never double-decrements.
+model ProcessedEtsyReceipt {
+  receiptId   String   @id
+  processedAt DateTime @default(now())
+  raw         String? // JSON snapshot for audit
+}
+
+// Pending / completed pushes of quantity FROM site TO Etsy.
+model EtsyPush {
+  id          String   @id @default(cuid())
+  variantId   String
+  variant     Variant  @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  targetQty   Int
+  status      String   @default("pending") // pending | done | failed
+  attempts    Int      @default(0)
+  lastError   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+}
+
+// Conflicts that need human resolution (never silently overwritten).
+model SyncConflict {
+  id         String    @id @default(cuid())
+  variantId  String
+  variant    Variant   @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  type       String // oversell | qty_mismatch | unmapped_listing | content_drift
+  siteQty    Int?
+  etsyQty    Int?
+  detail     String?
+  status     String    @default("open") // open | resolved | ignored
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+
+  @@index([status])
+}
+
+model SyncLog {
+  id        String   @id @default(cuid())
+  direction String // etsy_to_site | site_to_etsy | system
+  action    String
+  level     String   @default("info") // info | warn | error
+  message   String
+  meta      String? // JSON
+  createdAt DateTime @default(now())
+
+  @@index([level])
+  @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Marketing / misc
+// ---------------------------------------------------------------------------
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  source    String   @default("site")
+  consent   Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// Key/value settings editable in admin (poll interval, low-stock threshold,
+// shipping rates, etc.). Values stored as JSON strings.
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

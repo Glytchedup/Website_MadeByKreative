@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Font stacks via CSS variables (referenced in tailwind.config.ts).
+     Using system/web-safe stacks avoids a build-time font download. Swap for
+     next/font if you want self-hosted Google Fonts. */
+  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-cream text-charcoal antialiased;
+    font-family: var(--font-body);
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+  }
+  /* Visible focus states for keyboard navigation (WCAG 2.1 AA). */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    @apply outline-2 outline-offset-2 outline-terracotta;
+    outline-style: solid;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-soft px-5 py-3 font-semibold transition focus-visible:outline-2;
+  }
+  .btn-primary {
+    @apply btn bg-terracotta text-cream hover:bg-clay disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply btn border border-charcoal/20 bg-white text-charcoal hover:bg-linen;
+  }
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
+  }
+  .card {
+    @apply rounded-soft bg-white shadow-card;
+  }
+}
