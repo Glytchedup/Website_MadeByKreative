@@ -7,6 +7,7 @@ interface Props {
   product: {
     slug: string;
     title: string;
+    displayTitle?: string;
     images: string[];
     minPrice: number;
     totalStock: number;
@@ -17,6 +18,7 @@ interface Props {
 
 export function ProductCard({ product }: Props) {
   const img = product.images[0];
+  const name = product.displayTitle || product.title;
   const multi = product.variants.length > 1;
   return (
     <Link
@@ -27,7 +29,7 @@ export function ProductCard({ product }: Props) {
         {img ? (
           <Image
             src={img}
-            alt={product.title}
+            alt={name}
             fill
             sizes="(max-width: 640px) 50vw, 25vw"
             className="object-cover transition group-hover:scale-105"
@@ -43,7 +45,7 @@ export function ProductCard({ product }: Props) {
         {product.collection && (
           <p className="text-xs uppercase tracking-wide text-muted">{product.collection.name}</p>
         )}
-        <h3 className="mt-0.5 line-clamp-2 text-sm font-semibold">{product.title}</h3>
+        <h3 className="mt-0.5 line-clamp-2 text-sm font-semibold">{name}</h3>
         <p className="mt-1 text-sm font-bold text-terracotta">
           {multi ? "from " : ""}
           {formatPrice(product.minPrice)}

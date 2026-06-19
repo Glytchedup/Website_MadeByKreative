@@ -6,6 +6,7 @@
 import { prisma } from "./prisma";
 import { siteConfig } from "./config";
 import { decodeEntities } from "./html";
+import { cleanTitle, cleanSize } from "./display";
 
 export interface CatalogVariant {
   id: string;
@@ -47,24 +48,6 @@ export interface Catalog {
 // Compact money: "$18" when whole dollars, "$16.50" otherwise.
 function money(cents: number): string {
   return cents % 100 === 0 ? `$${cents / 100}` : `$${(cents / 100).toFixed(2)}`;
-}
-
-// Etsy titles are keyword-stuffed for search ("Halloween Shabby Rag Garland -
-// Handmade, Fabric, Banner") and may carry raw HTML entities ("St. Patrick&#39;s").
-// For the storefront we want the human name only: decode entities, then drop the
-// descriptor tail that starts at the first " - " / " – " separator (a dash with a
-// following space — so hyphenated words like "Pre-Day" are preserved). The full
-// keyword-rich title still lives in the DB for Etsy/SEO.
-function cleanTitle(raw: string): string {
-  const decoded = decodeEntities(raw).trim();
-  const name = decoded.split(/[-–—]\s/)[0].trim();
-  return name || decoded;
-}
-
-// Normalize size-label casing so the size chips read consistently
-// ("6 Feet" + "4 feet" -> "6 feet" + "4 feet").
-function cleanSize(raw: string): string {
-  return raw.replace(/\bFeet\b/g, "feet").replace(/\bInches\b/g, "inches").trim();
 }
 
 // Infer the banner "form" from the title (we don't store it separately).

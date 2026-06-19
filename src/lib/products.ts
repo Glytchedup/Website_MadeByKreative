@@ -3,6 +3,8 @@
 
 import type { Collection, Product, Variant } from "@prisma/client";
 import { prisma } from "./prisma";
+import { decodeEntities } from "./html";
+import { cleanTitle } from "./display";
 
 export type ProductView = Awaited<ReturnType<typeof getProductBySlug>>;
 
@@ -24,7 +26,11 @@ function decorate(p: RawProduct) {
   const minPrice = p.variants.length
     ? Math.min(...p.variants.map((v) => v.priceCents))
     : 0;
-  return { ...p, images, tags, totalStock, minPrice, inStock: totalStock > 0 };
+  // displayTitle is the clean, human-facing name; the raw `title` is kept for
+  // Etsy/SEO. description is decoded for display (Etsy returns HTML entities).
+  const displayTitle = cleanTitle(p.title);
+  const description = decodeEntities(p.description);
+  return { ...p, images, tags, totalStock, minPrice, inStock: totalStock > 0, displayTitle, description };
 }
 
 export async function getActiveProducts(opts?: { collectionSlug?: string }) {

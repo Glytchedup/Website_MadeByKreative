@@ -20,10 +20,10 @@ export async function generateMetadata({
   const p = await getProductBySlug(slug);
   if (!p) return { title: "Product not found" };
   return {
-    title: p.seoTitle || p.title,
+    title: p.seoTitle || p.displayTitle,
     description: p.seoDescription || p.description.slice(0, 155),
     openGraph: {
-      title: p.title,
+      title: p.seoTitle || p.displayTitle,
       description: p.description.slice(0, 155),
       images: p.images.slice(0, 1),
       type: "website",
@@ -49,7 +49,7 @@ export default async function ProductPage({
         data={{
           "@context": "https://schema.org",
           "@type": "Product",
-          name: product.title,
+          name: product.seoTitle || product.displayTitle,
           description: product.description,
           image: product.images,
           brand: { "@type": "Brand", name: siteConfig.name },
@@ -89,7 +89,7 @@ export default async function ProductPage({
         <div className="space-y-3">
           <div className="relative aspect-square overflow-hidden rounded-soft bg-linen">
             {product.images[0] ? (
-              <Image src={product.images[0]} alt={product.title} fill priority className="object-cover" sizes="(max-width:768px) 100vw, 50vw" />
+              <Image src={product.images[0]} alt={product.displayTitle} fill priority className="object-cover" sizes="(max-width:768px) 100vw, 50vw" />
             ) : (
               <div className="flex h-full items-center justify-center text-muted">No image</div>
             )}
@@ -98,7 +98,7 @@ export default async function ProductPage({
             <div className="grid grid-cols-4 gap-2">
               {product.images.slice(1, 5).map((src, i) => (
                 <div key={i} className="relative aspect-square overflow-hidden rounded bg-linen">
-                  <Image src={src} alt={`${product.title} view ${i + 2}`} fill className="object-cover" sizes="120px" />
+                  <Image src={src} alt={`${product.displayTitle} view ${i + 2}`} fill className="object-cover" sizes="120px" />
                 </div>
               ))}
             </div>
@@ -108,12 +108,12 @@ export default async function ProductPage({
         {/* Info */}
         <div>
           {product.collection && <p className="text-sm uppercase tracking-wide text-muted">{product.collection.name}</p>}
-          <h1 className="mt-1 text-3xl font-bold">{product.title}</h1>
+          <h1 className="mt-1 text-3xl font-bold">{product.seoTitle || product.displayTitle}</h1>
 
           <div className="mt-5">
             <AddToCart
               productSlug={product.slug}
-              title={product.title}
+              title={product.displayTitle}
               image={product.images[0]}
               variants={product.variants.map((v) => ({ id: v.id, name: v.name, priceCents: v.priceCents, quantity: v.quantity }))}
             />
