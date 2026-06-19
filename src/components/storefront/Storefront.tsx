@@ -248,12 +248,8 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
           </div>
 
           <div style={{ position: "relative", flex: "1.2 1 460px", minWidth: 320 }}>
-            <div style={{ position: "relative", aspectRatio: "25/22", overflow: "hidden", borderRadius: 3, boxShadow: "0 34px 66px rgba(60,45,25,0.2), 0 4px 14px rgba(60,45,25,0.08)", background: "#E4D7C2" }}>
-              {heroP?.images[0] ? (
-                <img src={heroP.images[0]} alt={heroP.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }} />
-              ) : (
-                <div style={{ display: "flex", height: "100%", alignItems: "center", justifyContent: "center", color: C.muted2 }}>A banner for every season</div>
-              )}
+            <div style={{ position: "relative", aspectRatio: "16/11", overflow: "hidden", borderRadius: 3, boxShadow: "0 34px 66px rgba(60,45,25,0.2), 0 4px 14px rgba(60,45,25,0.08)", background: "#E4D7C2" }}>
+              <img src="/hero.jpg" alt="Handmade Halloween rag garland draped across a fireplace mantel" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 52%" }} />
               <span style={{ position: "absolute", top: 14, left: 14, display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(46,42,36,0.74)", color: C.cream, fontSize: 11.5, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase", padding: "6px 12px", borderRadius: 999, backdropFilter: "blur(4px)" }}><span style={{ color: "#E7A877", fontSize: 13, lineHeight: 1 }}>&#9788;</span> A banner for every season</span>
               <div style={{ position: "absolute", left: 0, right: 0, bottom: -1, height: 13, background: C.cream, pointerEvents: "none", WebkitMask: frayMask, mask: frayMask }} />
             </div>
