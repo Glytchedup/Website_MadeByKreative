@@ -3,6 +3,16 @@
 All significant decisions and build steps for the MadeByKreative storefront. Entries note
 where judgment was exercised and why.
 
+## [0.4.2] — Banner pricing deep dive (bottom-up cost model)
+
+- `docs/banner-pricing-deep-dive.md` (+ PDF) and `docs/banner-cost-model.csv` (from
+  `scripts/cost-model.ts`): builds each banner's price from estimated materials + labor + shipping +
+  Etsy fees, cross-checks against market comps, and reverse-engineers the hourly wage Kristol earns
+  at current prices. Finding: avg **~$9.79/hr** (Birthday bunting just $3.23/hr; bow garland ~$19/hr
+  is the one well-priced item). Market comps run 2–3× her prices. Recommended measured increases —
+  biggest/safest wins are rag garlands and the Birthday buntings. All assumptions are flagged
+  estimates and editable in the script (real fabric cost + minutes-per-banner → recalculates).
+
 ## [0.4.1] — Fix per-size price flattening (website undercharge)
 
 - **Bug:** the content sync stored every variant at the listing's *base* (lowest) price, so all sizes
