@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { Suspense } from "react";
 import { ContactForm } from "@/components/ContactForm";
 import { siteConfig } from "@/lib/config";
 
@@ -16,7 +17,9 @@ export default function ContactPage() {
         get back to you personally.
       </p>
       <div className="mt-8">
-        <ContactForm />
+        <Suspense fallback={null}>
+          <ContactForm />
+        </Suspense>
       </div>
     </div>
   );

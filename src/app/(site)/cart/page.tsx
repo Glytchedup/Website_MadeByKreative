@@ -84,6 +84,8 @@ export default function CartPage() {
             {loading ? "Starting checkout…" : "Checkout securely"}
           </button>
           <p className="mt-2 text-center text-xs text-muted">🔒 Secure payment by Stripe</p>
+          {/* Social proof at the final decision point. Mirrors the shop stats in src/lib/catalog.ts. */}
+          <p className="mt-3 border-t border-charcoal/10 pt-3 text-center text-xs text-muted">★ 5.0 from 227 reviews · 1,280+ sold on Etsy</p>
         </aside>
       </div>
     </div>

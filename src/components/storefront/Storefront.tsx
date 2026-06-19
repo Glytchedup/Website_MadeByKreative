@@ -5,7 +5,7 @@
 // (useCart) + on-site Stripe checkout. "Add" adds the selected variant to the
 // cart; the cart button links to /cart. Etsy links remain as a secondary CTA.
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/components/cart/CartProvider";
 import type { Catalog, CatalogProduct, CatalogVariant } from "@/lib/catalog";
@@ -33,10 +33,11 @@ function badgeFor(p: CatalogProduct): string {
   if (p.tags.includes("Bestseller")) return "Bestseller";
   if (p.tags.includes("New")) return "New";
   const q = p.quantity;
+  // Scarcity is reserved for genuinely low stock so it stays meaningful (and
+  // honest) instead of appearing on nearly every handmade, low-count listing.
   if (q <= 0) return "Sold out";
   if (q === 1) return "Only 1 left";
-  if (q <= 3) return `Only ${q} left`;
-  if (q <= 5) return "Only a few left";
+  if (q === 2) return "Only 2 left";
   return "";
 }
 function badgeStyle(label: string): { bg: string; fg: string } {
@@ -49,6 +50,9 @@ function badgeStyle(label: string): { bg: string; fg: string } {
 const frayMask =
   "conic-gradient(from -45deg at bottom, transparent, #000 1deg 89deg, transparent 90deg) bottom/13px 100% repeat-x";
 
+// The season depicted in the static hero photo (/hero.jpg). Keep this in sync
+// whenever the hero image is swapped so the hero pill matches what's shown.
+const HERO_SEASON = "Halloween";
 const BUNT_COLORS = ["#E0734F", "#EBD9BE", "#9CB082", "#34506B", "#D8A24A", "#C98BA0"];
 const SEASON_BY_MONTH = [
   "Valentine's", "Valentine's", "St. Patrick's", "Easter", "Spring", "Patriotic",
@@ -66,7 +70,10 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
   const [galleryIdx, setGalleryIdx] = useState(0);
   const [seasonFilter, setSeasonFilter] = useState("All");
   const [custom, setCustom] = useState({ season: "", style: "Pennant bunting", length: "Standard" });
+  const [addedId, setAddedId] = useState<string | null>(null);
   const flyLayer = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const addedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const selectedVariant = (p: CatalogProduct): CatalogVariant | undefined => {
     const chosen = p.variants.find((v) => v.id === sizeSel[p.id]);
@@ -106,6 +113,10 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
       maxQty: v.quantity,
     });
     flyHeart(e);
+    // Brief, unmistakable confirmation on the button itself (H1: system status).
+    setAddedId(p.id);
+    if (addedTimer.current) clearTimeout(addedTimer.current);
+    addedTimer.current = setTimeout(() => setAddedId(null), 1500);
   }
 
   // ---- derived view data ----
@@ -131,6 +142,13 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
   const seasonNow =
     seasonOrder.find((s) => norm(s).includes(norm(monthName))) || seasonOrder[0] || "All";
   const seasonNowCount = products.filter((p) => p.season === seasonNow).length;
+
+  // The hero pill points at the season the hero photo actually shows (so badge
+  // and image agree), falling back to the calendar season if that collection is
+  // empty.
+  const heroSeasonHasStock = products.some((p) => p.season === HERO_SEASON);
+  const featuredSeason = heroSeasonHasStock ? HERO_SEASON : seasonNow;
+  const featuredSeasonCount = products.filter((p) => p.season === featuredSeason).length;
 
   const seasonCounts: Record<string, number> = {};
   products.forEach((p) => { seasonCounts[p.season] = (seasonCounts[p.season] || 0) + 1; });
@@ -169,6 +187,16 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
   const lengthAdj: Record<string, number> = { Mini: -3, Standard: 0, "Extra long": 8 };
   const cSeason = custom.season || seasonNow;
   const cPrice = (stylePrice[custom.style] || 15) + (lengthAdj[custom.length] || 0);
+  // Carry the configured selections into the contact form so the shopper doesn't
+  // have to retype them (H6) and Kristol gets the details up front.
+  const customMessage =
+    `Hi! I'd love to request a custom banner:\n\n` +
+    `• Season / colors: ${cSeason}\n` +
+    `• Style: ${custom.style}\n` +
+    `• Length: ${custom.length}\n` +
+    `• Estimated price: ~$${cPrice}\n\n` +
+    `A few details about what I'm picturing: `;
+  const customHref = `/contact?subject=${encodeURIComponent("Custom banner request")}&message=${encodeURIComponent(customMessage)}`;
 
   // ---- modal ----
   const mp = openId ? products.find((p) => p.id === openId) : null;
@@ -186,6 +214,46 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
     setOpenId(null);
     if (typeof document !== "undefined") document.body.style.overflow = "";
   }
+
+  // Modal keyboard support (H3): Esc closes, Tab is trapped inside the dialog,
+  // and focus moves into the dialog on open.
+  useEffect(() => {
+    if (!openId) return;
+    const getFocusable = () => {
+      const el = modalRef.current;
+      if (!el) return [] as HTMLElement[];
+      return Array.from(
+        el.querySelectorAll<HTMLElement>('button, a[href], input, textarea, select, [tabindex]:not([tabindex="-1"])')
+      ).filter((n) => !n.hasAttribute("disabled"));
+    };
+    getFocusable()[0]?.focus();
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeProduct();
+        return;
+      }
+      if (e.key === "Tab") {
+        const list = getFocusable();
+        if (!list.length) return;
+        const first = list[0];
+        const last = list[list.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openId]);
+
+  // Clear any pending "Added" confirmation timer on unmount.
+  useEffect(() => () => { if (addedTimer.current) clearTimeout(addedTimer.current); }, []);
 
   return (
     <div ref={flyLayer} style={{ minHeight: "100vh", backgroundColor: C.cream, backgroundImage: "repeating-linear-gradient(0deg, rgba(120,98,66,0.022) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(120,98,66,0.022) 0 1px, transparent 1px 3px)", color: C.ink, fontFamily: sans }}>
@@ -211,8 +279,8 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
       </header>
 
       {/* HERO */}
-      <section id="top" style={{ maxWidth: 1240, margin: "0 auto", padding: "22px 28px 36px" }}>
-        <div style={{ position: "relative", height: 72, margin: "0 -28px 10px" }}>
+      <section id="top" style={{ maxWidth: 1240, margin: "0 auto", padding: "14px 28px 36px" }}>
+        <div style={{ position: "relative", height: 72, margin: "0 -28px 2px" }}>
           <svg viewBox="0 0 1000 72" preserveAspectRatio="none" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: 72 }}>
             <path d="M120 12 Q500 60 880 12" fill="none" stroke="rgba(110,90,60,0.3)" strokeWidth={1.5} strokeLinecap="round" vectorEffect="non-scaling-stroke" />
           </svg>
@@ -224,12 +292,12 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "clamp(32px,5vw,60px)", alignItems: "center" }}>
           <div style={{ flex: "1 1 360px", minWidth: 300 }}>
-            <a href="#shop" onClick={() => setSeasonFilter(seasonNow)} style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 9, background: "rgba(176,104,63,0.1)", border: "1px solid rgba(176,104,63,0.28)", color: C.clayDark, padding: "7px 15px 7px 12px", borderRadius: 999, fontSize: 13, fontWeight: 600, marginBottom: 18 }}>
+            <a href="#shop" onClick={() => setSeasonFilter(featuredSeason)} style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 9, background: "rgba(176,104,63,0.1)", border: "1px solid rgba(176,104,63,0.28)", color: C.clayDark, padding: "7px 15px 7px 12px", borderRadius: 999, fontSize: 13, fontWeight: 600, marginBottom: 18 }}>
               <span style={{ position: "relative", display: "inline-flex", width: 8, height: 8 }}>
                 <span style={{ position: "absolute", inset: 0, borderRadius: "50%", background: C.clay }} />
                 <span style={{ position: "absolute", inset: -3, borderRadius: "50%", border: "1px solid rgba(176,104,63,0.5)", animation: "mbkPulse 2s ease-out infinite" }} />
               </span>
-              In season now: {seasonNow} · {seasonNowCount} styles
+              Featured now: {featuredSeason} · {featuredSeasonCount} styles
             </a>
             <span style={{ fontFamily: script, fontSize: "clamp(28px,3.4vw,38px)", color: C.clay, display: "block", transform: "rotate(-2deg)", marginBottom: 6 }}>Handmade with love</span>
             <h1 style={{ fontFamily: serif, fontWeight: 400, fontSize: "clamp(46px,6.4vw,82px)", lineHeight: 1.02, letterSpacing: "-0.02em", margin: "6px 0 0", color: C.ink }}>Seasonal banners,<br />stitched by hand.</h1>
@@ -392,7 +460,13 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
                   )}
                   <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 10 }}>
                     <span style={{ fontFamily: serif, fontSize: 26, fontWeight: 500, color: C.ink, lineHeight: 0.95 }}>{money(v?.priceCents ?? p.priceCents)}</span>
-                    <button onClick={(e) => addToCart(p, e)} disabled={!v || v.quantity <= 0} style={{ display: "inline-flex", alignItems: "center", gap: 7, background: v && v.quantity > 0 ? C.clay : "#B8AE9E", color: C.cream, border: "none", borderRadius: 2, padding: "10px 17px", fontFamily: sans, fontSize: 13, fontWeight: 600, letterSpacing: "0.03em", cursor: v && v.quantity > 0 ? "pointer" : "not-allowed", boxShadow: "inset 0 0 0 1.5px rgba(255,255,255,0.22), 0 4px 12px rgba(176,104,63,0.22)" }}><span style={{ fontSize: 13, lineHeight: 1 }}>&#10022;</span> {v && v.quantity > 0 ? "Add" : "Sold out"}</button>
+                    {(() => {
+                      const added = addedId === p.id;
+                      const buyable = !!v && v.quantity > 0;
+                      return (
+                        <button onClick={(e) => addToCart(p, e)} disabled={!buyable} style={{ display: "inline-flex", alignItems: "center", gap: 7, background: added ? "#5E7355" : buyable ? C.clay : "#B8AE9E", color: C.cream, border: "none", borderRadius: 2, padding: "10px 17px", fontFamily: sans, fontSize: 13, fontWeight: 600, letterSpacing: "0.03em", cursor: buyable ? "pointer" : "not-allowed", transition: "background .2s ease", boxShadow: "inset 0 0 0 1.5px rgba(255,255,255,0.22), 0 4px 12px rgba(176,104,63,0.22)" }}><span style={{ fontSize: 13, lineHeight: 1 }}>{added ? "✓" : "✦"}</span> {added ? "Added" : buyable ? "Add" : "Sold out"}</button>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
@@ -439,7 +513,7 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
               <span style={{ fontSize: 13, color: "#C9BCA8" }}>Estimated</span>
               <span style={{ fontFamily: serif, fontSize: 27, color: C.cream }}>~${cPrice}</span>
             </div>
-            <Link href="/contact" style={{ marginTop: 22, textAlign: "center", textDecoration: "none", background: C.clay, color: C.cream, borderRadius: 2, padding: "14px 20px", fontFamily: sans, fontSize: 15, fontWeight: 600 }}>Request this custom banner &rarr;</Link>
+            <Link href={customHref} style={{ marginTop: 22, textAlign: "center", textDecoration: "none", background: C.clay, color: C.cream, borderRadius: 2, padding: "14px 20px", fontFamily: sans, fontSize: 15, fontWeight: 600 }}>Request this custom banner &rarr;</Link>
             <span style={{ fontSize: 12, color: "#9C8F7C", textAlign: "center", marginTop: 9 }}>We&apos;ll confirm fabrics &amp; details by message before I start.</span>
           </div>
         </div>
@@ -531,7 +605,7 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
       {/* PRODUCT MODAL */}
       {mp && (
         <div onClick={closeProduct} style={{ position: "fixed", inset: 0, zIndex: 100, background: "rgba(40,30,18,0.55)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ position: "relative", background: "#FEFCF8", borderRadius: 5, width: "100%", maxWidth: 960, maxHeight: "90vh", overflow: "auto", boxShadow: "0 40px 90px rgba(40,30,18,0.45)", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 360px), 1fr))" }}>
+          <div ref={modalRef} role="dialog" aria-modal="true" aria-label={mp.title} tabIndex={-1} onClick={(e) => e.stopPropagation()} style={{ position: "relative", background: "#FEFCF8", borderRadius: 5, width: "100%", maxWidth: 960, maxHeight: "90vh", overflow: "auto", boxShadow: "0 40px 90px rgba(40,30,18,0.45)", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 360px), 1fr))", outline: "none" }}>
             <button onClick={closeProduct} aria-label="Close" style={{ position: "absolute", top: 14, right: 14, zIndex: 5, width: 36, height: 36, borderRadius: "50%", border: "none", background: "rgba(254,252,248,0.92)", color: C.ink, fontSize: 20, lineHeight: 1, cursor: "pointer", boxShadow: "0 2px 10px rgba(40,30,18,0.18)" }}>&times;</button>
             <div style={{ padding: 20, background: "#F4EDE2" }}>
               <div style={{ position: "relative", aspectRatio: "4/5", borderRadius: 3, overflow: "hidden", background: "#E4D7C2", boxShadow: "0 6px 18px rgba(60,45,25,0.12)" }}>
@@ -556,9 +630,9 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
                 {mBadge && <span style={{ marginLeft: "auto", background: badgeStyle(mBadge).bg, color: badgeStyle(mBadge).fg, fontSize: 10.5, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", padding: "4px 9px", borderRadius: 999 }}>{mBadge}</span>}
               </div>
               <h2 style={{ fontFamily: serif, fontWeight: 500, fontSize: "clamp(26px,3.2vw,34px)", lineHeight: 1.12, letterSpacing: "-0.01em", margin: "8px 0 0", color: C.ink }}>{mp.title}</h2>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
                 <span style={{ color: "#C9912F", letterSpacing: 2, fontSize: 15 }}>&#9733;&#9733;&#9733;&#9733;&#9733;</span>
-                <span style={{ fontSize: 13, color: C.muted2 }}>5.0 · Star Seller</span>
+                <span style={{ fontSize: 13, color: C.muted2 }}><strong style={{ color: C.ink }}>{shop.rating.toFixed(1)}</strong> · {shop.reviewCount} reviews · {shop.salesCount} sold on Etsy</span>
               </div>
               <span style={{ fontFamily: serif, fontSize: 28, fontWeight: 500, color: C.ink, display: "block", margin: "16px 0 0" }}>{money(mv?.priceCents ?? mp.priceCents)}</span>
               <p style={{ fontSize: 15, lineHeight: 1.65, color: C.muted, margin: "18px 0 0", whiteSpace: "pre-line" }}>{mp.description}</p>
