@@ -12,6 +12,7 @@
 
 import { prisma } from "../prisma";
 import { tunables } from "../config";
+import { decodeEntities } from "../html";
 import {
   addStock,
   forceDecrement,
@@ -104,6 +105,11 @@ export async function syncContentFromEtsy(): Promise<{
         ? Math.round((listing.price.amount / listing.price.divisor) * 100)
         : 1000;
 
+      // Etsy returns HTML-encoded text (e.g. "St. Patrick&#39;s"); store plain text.
+      const title = decodeEntities(listing.title);
+      const description = decodeEntities(listing.description ?? "");
+      const tags = (listing.tags ?? []).map(decodeEntities);
+
       let images: string[] = [];
       try {
         const imgs = await getListingImages(listing.listing_id);
@@ -117,13 +123,13 @@ export async function syncContentFromEtsy(): Promise<{
         const inv = await getListingInventory(listing.listing_id).catch(() => null);
         const created = await prisma.product.create({
           data: {
-            slug: `${slugify(listing.title)}-${listing.listing_id}`,
-            title: listing.title,
-            description: listing.description,
+            slug: `${slugify(title)}-${listing.listing_id}`,
+            title,
+            description,
             basePriceCents: priceCents,
             collectionId: collection?.id,
             images: JSON.stringify(images),
-            tags: JSON.stringify(listing.tags ?? []),
+            tags: JSON.stringify(tags),
             etsyListingId: String(listing.listing_id),
             status: listing.state === "active" ? "active" : "draft",
             isSeed: false,
@@ -188,11 +194,11 @@ export async function syncContentFromEtsy(): Promise<{
         await prisma.product.update({
           where: { id: existing.id },
           data: {
-            title: listing.title,
-            description: listing.description,
+            title,
+            description,
             basePriceCents: priceCents,
             images: JSON.stringify(images),
-            tags: JSON.stringify(listing.tags ?? []),
+            tags: JSON.stringify(tags),
             collectionId: collection?.id ?? existing.collectionId,
             status: listing.state === "active" ? "active" : "draft",
           },
