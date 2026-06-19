@@ -8,6 +8,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/components/cart/CartProvider";
+import { StoreHeader } from "@/components/storefront/StoreHeader";
+import { StoreFooter } from "@/components/storefront/StoreFooter";
 import type { Catalog, CatalogProduct, CatalogVariant } from "@/lib/catalog";
 
 const C = {
@@ -60,7 +62,7 @@ const SEASON_BY_MONTH = [
 ];
 
 export function Storefront({ catalog }: { catalog: Catalog }) {
-  const { add, count } = useCart();
+  const { add } = useCart();
   const products = catalog.products;
   const { shop, seasonOrder } = catalog;
 
@@ -174,12 +176,6 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
     { text: "Love this mini flag banner! Will definitely be ordering more in the future.", name: "Sara", item: "Mini Bunting Banner", initial: "S", av: "#3E5C73" },
   ];
 
-  const footerCols = [
-    { title: "Shop", links: [{ label: "All banners", href: "/shop" }, { label: "Collections", href: "/collections" }, { label: "Custom orders", href: "#custom" }] },
-    { title: "Seasons", links: availSeasons.slice(0, 5).map((s) => ({ label: s, href: "#seasons" })) },
-    { title: "Help", links: [{ label: "Shipping & returns", href: "/policies" }, { label: "About Kristol", href: "/about" }, { label: "Contact", href: "/contact" }] },
-  ];
-
   // ---- custom tool ----
   const styleChoices = ["Pennant bunting", "Shabby rag garland", "Tied bow garland"];
   const lengthChoices = ["Mini", "Standard", "Extra long"];
@@ -258,25 +254,8 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
   return (
     <div ref={flyLayer} style={{ minHeight: "100vh", backgroundColor: C.cream, backgroundImage: "repeating-linear-gradient(0deg, rgba(120,98,66,0.022) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(120,98,66,0.022) 0 1px, transparent 1px 3px)", color: C.ink, fontFamily: sans }}>
 
-      {/* HEADER */}
-      <header style={{ position: "sticky", top: 0, zIndex: 50, backdropFilter: "saturate(1.1) blur(10px)", background: "rgba(251,248,243,0.82)", borderBottom: `1px solid ${C.line}` }}>
-        <div style={{ maxWidth: 1240, margin: "0 auto", padding: "16px 28px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, flexWrap: "wrap" }}>
-          <a href="#top" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 13 }}>
-            <span style={{ fontFamily: script, fontSize: 34, color: C.clay, lineHeight: 1 }}>MadeByKreative</span>
-            <span style={{ fontFamily: sans, fontSize: 11, letterSpacing: "0.3em", textTransform: "uppercase", color: C.muted3, paddingLeft: 15, borderLeft: "1px solid rgba(110,90,60,0.2)", lineHeight: 1.55, maxWidth: 100 }}>Handmade Fabric Banners</span>
-          </a>
-          <nav style={{ display: "flex", alignItems: "center", gap: 30, flexWrap: "wrap" }}>
-            {[["#seasons", "Shop by Season"], ["#shop", "Featured"], ["#custom", "Custom"], ["#story", "Our Story"], ["#reviews", "Reviews"]].map(([href, label]) => (
-              <a key={href} href={href} style={{ textDecoration: "none", color: C.muted, fontSize: 14.5, fontWeight: 500 }}>{label}</a>
-            ))}
-            <Link href="/cart" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 8, background: C.ink, color: C.cream, border: "none", borderRadius: 999, padding: "9px 16px 9px 14px", fontFamily: sans, fontSize: 13.5, fontWeight: 600 }}>
-              <span style={{ fontSize: 15 }}>&#9788;</span>
-              <span>Cart</span>
-              <span style={{ background: "rgba(251,248,243,0.22)", borderRadius: 999, minWidth: 20, height: 20, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, padding: "0 6px" }}>{count}</span>
-            </Link>
-          </nav>
-        </div>
-      </header>
+      {/* HEADER (shared with inner pages) */}
+      <StoreHeader />
 
       {/* HERO */}
       <section id="top" style={{ maxWidth: 1240, margin: "0 auto", padding: "14px 28px 36px" }}>
@@ -572,35 +551,8 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer style={{ maxWidth: 1240, margin: "0 auto", padding: "64px 28px 48px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 180px), 1fr))", gap: "36px 28px", paddingBottom: 40, borderBottom: `1px solid ${C.line}` }}>
-          <div style={{ minWidth: 200 }}>
-            <span style={{ fontFamily: script, fontSize: 30, color: C.clay }}>MadeByKreative</span>
-            <p style={{ fontSize: 14, lineHeight: 1.6, color: C.muted2, margin: "12px 0 0", maxWidth: "30ch" }}>Handmade fabric banners, sewn one stitch at a time in Gilbert, Arizona.</p>
-          </div>
-          {footerCols.map((col) => (
-            <div key={col.title}>
-              <h4 style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", color: C.muted3, margin: "0 0 14px" }}>{col.title}</h4>
-              <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 10 }}>
-                {col.links.map((lk) => (
-                  <li key={lk.label}>
-                    {lk.href.startsWith("#") ? (
-                      <a href={lk.href} style={{ textDecoration: "none", color: C.muted, fontSize: 14 }}>{lk.label}</a>
-                    ) : (
-                      <Link href={lk.href} style={{ textDecoration: "none", color: C.muted, fontSize: 14 }}>{lk.label}</Link>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap", paddingTop: 24 }}>
-          <span style={{ fontSize: 13, color: C.muted3 }}>© {new Date().getFullYear()} MadeByKreative · Made with love by Kristol</span>
-          <span style={{ fontFamily: script, fontSize: 22, color: C.clay }}>handmade with love &#9825;</span>
-        </div>
-      </footer>
+      {/* FOOTER (shared with inner pages) */}
+      <StoreFooter />
 
       {/* PRODUCT MODAL */}
       {mp && (

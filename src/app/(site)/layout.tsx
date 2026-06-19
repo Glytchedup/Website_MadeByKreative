@@ -1,8 +1,8 @@
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
+import { StoreHeader } from "@/components/storefront/StoreHeader";
+import { StoreFooter } from "@/components/storefront/StoreFooter";
 
-// Chrome for the inner storefront pages (shop, cart, about, etc.). The homepage
-// uses its own full design (own header/footer) and lives outside this group.
+// Chrome for the inner storefront pages (shop, cart, about, etc.). Uses the same
+// shared header/footer as the homepage so the whole site shares one identity.
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
@@ -12,9 +12,9 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       >
         Skip to content
       </a>
-      <Header />
+      <StoreHeader />
       <main id="main">{children}</main>
-      <Footer />
+      <StoreFooter />
     </>
   );
 }

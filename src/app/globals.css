@@ -9,10 +9,10 @@
 
 :root {
   /* Font stacks via CSS variables (referenced in tailwind.config.ts).
-     Using system/web-safe stacks avoids a build-time font download. Swap for
-     next/font if you want self-hosted Google Fonts. */
-  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
-  --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+     These are the brand fonts loaded in app/layout.tsx, so inner pages match
+     the homepage's typography (Newsreader headings, Hanken Grotesk body). */
+  --font-display: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-body: "Hanken Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
 @layer base {
