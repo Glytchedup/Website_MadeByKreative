@@ -64,7 +64,7 @@ export function AddToCart({
           >
             {variants.map((v) => (
               <option key={v.id} value={v.id} disabled={v.quantity <= 0}>
-                {v.name} — {formatPrice(v.priceCents)}
+                {v.name}, {formatPrice(v.priceCents)}
                 {v.quantity <= 0 ? " (sold out)" : ""}
               </option>
             ))}

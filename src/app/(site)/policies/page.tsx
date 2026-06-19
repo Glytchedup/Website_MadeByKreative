@@ -18,15 +18,15 @@ async function getPolicy(key: string, fallback: string) {
 export default async function PoliciesPage() {
   const shipping = await getPolicy(
     "policy_shipping",
-    "Most orders ship within 1–3 business days via USPS. You'll receive tracking by email. (Placeholder — confirm your real turnaround and carrier in admin.)"
+    "Most orders ship within 1–3 business days via USPS. You'll receive tracking by email. (Placeholder, confirm your real turnaround and carrier in admin.)"
   );
   const returns = await getPolicy(
     "policy_returns",
-    "Because items are handmade, please contact me within 7 days of delivery for any issue and I'll make it right with a replacement or refund. (Placeholder — confirm your return policy.)"
+    "Because items are handmade, please contact me within 7 days of delivery for any issue and I'll make it right with a replacement or refund. (Placeholder, confirm your return policy.)"
   );
   const faq = await getPolicy(
     "policy_faq",
-    "Q: Are these really handmade? Yes — every piece is sewn by hand by Kristol.\nQ: Can I request a custom color? Often yes — use the contact page to ask!\n(Placeholder FAQ — edit in admin.)"
+    "Q: Are these really handmade? Yes, every piece is sewn by hand by Kristol.\nQ: Can I request a custom color? Often yes, use the contact page to ask!\n(Placeholder FAQ, edit in admin.)"
   );
 
   return (

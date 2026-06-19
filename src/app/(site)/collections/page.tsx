@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Collections",
-  description: "Shop handmade decor by season and holiday — Halloween, Fall, Christmas, Valentine's and more.",
+  description: "Shop handmade decor by season and holiday, Halloween, Fall, Christmas, Valentine's and more.",
 };
 
 export default async function CollectionsPage() {

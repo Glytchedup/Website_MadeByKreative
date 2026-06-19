@@ -30,7 +30,7 @@ export async function sendOrderConfirmation(opts: {
   const html = `
   <div style="font-family:Georgia,serif;max-width:560px;margin:auto;color:#3A352F">
     <h1 style="color:#B85C38">Thank you for your order! 💛</h1>
-    <p>Hi there — your handmade goods from ${siteConfig.name} are confirmed.
+    <p>Hi there, your handmade goods from ${siteConfig.name} are confirmed.
        Each piece is made and packed with love by ${siteConfig.maker}.</p>
     <table style="width:100%;border-collapse:collapse;margin:16px 0">${rows}
       <tr><td style="padding-top:12px;border-top:1px solid #eee"><strong>Total</strong></td>
@@ -52,7 +52,7 @@ export async function sendOversellAlert(opts: {
   if (!to) return;
   const html = `
   <div style="font-family:sans-serif;color:#3A352F">
-    <h2 style="color:#B85C38">⚠️ Possible oversell — action needed</h2>
+    <h2 style="color:#B85C38">⚠️ Possible oversell, action needed</h2>
     <p>An order may have sold an item that was already gone (likely sold on Etsy too).</p>
     <p><strong>Order:</strong> ${opts.orderId}</p>
     <p>${opts.detail}</p>

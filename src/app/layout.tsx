@@ -7,7 +7,7 @@ import { Analytics } from "@/components/Analytics";
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: `${siteConfig.name} — Handmade Fabric Garlands, Banners & Keychains`,
+    default: `${siteConfig.name}, Handmade Fabric Garlands, Banners & Keychains`,
     template: `%s · ${siteConfig.name}`,
   },
   description: siteConfig.description,
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     type: "website",
     siteName: siteConfig.name,
     url: siteConfig.url,
-    title: `${siteConfig.name} — Handmade with love in ${siteConfig.location}`,
+    title: `${siteConfig.name}, Handmade with love in ${siteConfig.location}`,
     description: siteConfig.description,
   },
   twitter: { card: "summary_large_image" },

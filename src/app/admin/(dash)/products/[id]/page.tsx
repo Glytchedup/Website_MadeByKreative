@@ -47,7 +47,7 @@ export default async function EditProduct({ params }: { params: Promise<{ id: st
       {product.etsyListingId && (
         <p className="mt-3 text-sm text-muted">
           🔗 Linked to Etsy listing {product.etsyListingId}. Content (title, photos, description) is
-          mirrored from Etsy on each sync — edit those there. Inventory is two-way.
+          mirrored from Etsy on each sync, edit those there. Inventory is two-way.
         </p>
       )}
 
@@ -55,7 +55,7 @@ export default async function EditProduct({ params }: { params: Promise<{ id: st
       <p className="text-sm text-muted">Every stock movement is recorded here for a full audit trail.</p>
       {product.variants.map((v) => (
         <div key={v.id} className="card mt-3 p-4">
-          <p className="font-semibold">{v.name} — {v.quantity} in stock · {formatPrice(v.priceCents)}</p>
+          <p className="font-semibold">{v.name}, {v.quantity} in stock · {formatPrice(v.priceCents)}</p>
           <table className="mt-2 w-full text-sm">
             <thead><tr className="text-left text-muted"><th className="py-1">When</th><th>Change</th><th>Reason</th><th>Channel</th><th>Note</th></tr></thead>
             <tbody>

@@ -151,7 +151,7 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
   ];
 
   const reviews = [
-    { text: "The shabby patriotic piece is sensational and is used on one of our wreaths. We love it — thank you for your patriotism and your artistry.", name: "Sue", item: "Patriotic Shabby Rag Garland", initial: "S", av: "#B0683F" },
+    { text: "The shabby patriotic piece is sensational and is used on one of our wreaths. We love it! Thank you for your patriotism and your artistry.", name: "Sue", item: "Patriotic Shabby Rag Garland", initial: "S", av: "#B0683F" },
     { text: "Love it so much. Looks absolutely perfect on my mantle.", name: "Ashley", item: "Fall Shabby Bow Garland", initial: "A", av: "#7D8B6A" },
     { text: "Love this mini flag banner! Will definitely be ordering more in the future.", name: "Sara", item: "Mini Bunting Banner", initial: "S", av: "#3E5C73" },
   ];
@@ -234,7 +234,7 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
             <span style={{ fontFamily: script, fontSize: "clamp(28px,3.4vw,38px)", color: C.clay, display: "block", transform: "rotate(-2deg)", marginBottom: 6 }}>Handmade with love</span>
             <h1 style={{ fontFamily: serif, fontWeight: 400, fontSize: "clamp(46px,6.4vw,82px)", lineHeight: 1.02, letterSpacing: "-0.02em", margin: "6px 0 0", color: C.ink }}>Seasonal banners,<br />stitched by hand.</h1>
             <div style={{ height: 9, width: "min(340px,80%)", marginTop: 14, backgroundImage: "radial-gradient(circle, #C2453F 1.9px, transparent 2.2px)", backgroundSize: "11px 9px", backgroundRepeat: "repeat-x", backgroundPosition: "left center" }} />
-            <p style={{ fontSize: "clamp(16px,1.5vw,19px)", lineHeight: 1.65, color: C.muted, maxWidth: "42ch", margin: "22px 0 0" }}>Pennant buntings, shabby rag garlands, and tied-bow banners — raw frayed edges and all — made one stitch at a time to bring a little warmth to your mantle.</p>
+            <p style={{ fontSize: "clamp(16px,1.5vw,19px)", lineHeight: 1.65, color: C.muted, maxWidth: "42ch", margin: "22px 0 0" }}>Pennant buntings, shabby rag garlands, and tied-bow banners, raw frayed edges and all, made one stitch at a time to bring a little warmth to your mantle.</p>
             <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap", marginTop: 32 }}>
               <a href="#shop" style={{ textDecoration: "none", background: C.clay, color: C.cream, padding: "16px 32px", borderRadius: 2, fontSize: 15, fontWeight: 600, letterSpacing: "0.02em", boxShadow: "0 8px 22px rgba(176,104,63,0.26)" }}>Shop the Collection</a>
               <a href="#story" style={{ textDecoration: "none", color: C.ink, fontSize: 15, fontWeight: 600, borderBottom: "1.5px solid rgba(110,90,60,0.3)", paddingBottom: 3 }}>Meet the maker &rarr;</a>
@@ -250,23 +250,8 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
           <div style={{ position: "relative", flex: "1.2 1 460px", minWidth: 320 }}>
             <div style={{ position: "relative", aspectRatio: "16/11", overflow: "hidden", borderRadius: 3, boxShadow: "0 34px 66px rgba(60,45,25,0.2), 0 4px 14px rgba(60,45,25,0.08)", background: "#E4D7C2" }}>
               <img src="/hero.jpg" alt="Handmade Halloween rag garland draped across a fireplace mantel" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 52%" }} />
-              <span style={{ position: "absolute", top: 14, left: 14, display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(46,42,36,0.74)", color: C.cream, fontSize: 11.5, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase", padding: "6px 12px", borderRadius: 999, backdropFilter: "blur(4px)" }}><span style={{ color: "#E7A877", fontSize: 13, lineHeight: 1 }}>&#9788;</span> A banner for every season</span>
               <div style={{ position: "absolute", left: 0, right: 0, bottom: -1, height: 13, background: C.cream, pointerEvents: "none", WebkitMask: frayMask, mask: frayMask }} />
             </div>
-            <div style={{ position: "absolute", bottom: -18, left: -18, background: "#FEFCF8", border: `1px solid ${C.line}`, borderRadius: 2, padding: "14px 20px", boxShadow: "0 16px 30px rgba(60,45,25,0.12)", display: "flex", flexDirection: "column", gap: 2 }}>
-              <span style={{ fontFamily: script, fontSize: 24, color: C.clay, lineHeight: 1 }}>one stitch at a time</span>
-              <span style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: C.muted3 }}>Cut, knotted &amp; sewn by hand</span>
-            </div>
-            {heroP && (
-              <button onClick={() => openProduct(heroP.id)} style={{ position: "absolute", right: -16, bottom: 44, display: "flex", alignItems: "center", gap: 11, background: "#FEFCF8", border: `1px solid ${C.line}`, borderRadius: 3, padding: "9px 15px 9px 9px", boxShadow: "0 18px 36px rgba(60,45,25,0.22)", cursor: "pointer", textAlign: "left", maxWidth: 236 }}>
-                {heroP.images[0] && <img src={heroP.images[0]} alt={heroP.title} style={{ width: 54, height: 54, objectFit: "cover", borderRadius: 2, flex: "none" }} />}
-                <span style={{ display: "flex", flexDirection: "column", gap: 1, minWidth: 0 }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: C.clay }}><span style={{ fontSize: 11, lineHeight: 1 }}>&#10022;</span> Just added</span>
-                  <span style={{ fontFamily: serif, fontSize: 15, fontWeight: 500, color: C.ink, lineHeight: 1.15, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{heroP.title}</span>
-                  <span style={{ fontSize: 12.5, color: C.muted2, fontWeight: 600 }}>{heroP.priceLabel} &rarr;</span>
-                </span>
-              </button>
-            )}
           </div>
         </div>
       </section>

@@ -9,7 +9,7 @@ export function Footer() {
         <div>
           <h3 className="font-display text-lg font-bold text-terracotta">{siteConfig.name}</h3>
           <p className="mt-2 max-w-xs text-sm text-muted">
-            Handmade fabric garlands, banners, bunting & keychains — stitched with love by{" "}
+            Handmade fabric garlands, banners, bunting & keychains, stitched with love by{" "}
             {siteConfig.maker} in {siteConfig.location}.
           </p>
           <p className="mt-3 text-sm">

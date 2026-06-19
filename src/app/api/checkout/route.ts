@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       );
       if (!jit.ok) {
         return NextResponse.json(
-          { error: `"${v.product.title}" just sold out. We've updated the listing — sorry!` },
+          { error: `"${v.product.title}" just sold out. We've updated the listing, sorry!` },
           { status: 409 }
         );
       }
@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
           currency: "usd",
           unit_amount: v.priceCents,
           product_data: {
-            name: `${v.product.title}${v.name !== "Default" ? ` — ${v.name}` : ""}`,
+            name: `${v.product.title}${v.name !== "Default" ? `, ${v.name}` : ""}`,
           },
         },
       };

@@ -3,7 +3,7 @@ import { siteConfig } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: "Our Story",
-  description: "How MadeByKreative began — a family, a diagnosis, and a love of handmade craft.",
+  description: "How MadeByKreative began, a family, a diagnosis, and a love of handmade craft.",
 };
 
 export default function AboutPage() {
@@ -16,21 +16,21 @@ export default function AboutPage() {
         <p>
           MadeByKreative started in one of the hardest seasons of our family&apos;s life. When
           someone we love dearly was diagnosed with cancer, I picked up needle and thread and
-          began making fabric masks — a small way to help and to keep my hands busy through the worry.
+          began making fabric masks, a small way to help and to keep my hands busy through the worry.
         </p>
         <p>
           What began as a way to cope grew into something joyful. Friends asked for garlands, then
           banners, then keychains. Five years later, MadeByKreative is a Star Seller on Etsy with
-          over 1,280 sales and a 5.0★ rating across 227 reviews — but at heart it&apos;s still the
+          over 1,280 sales and a 5.0★ rating across 227 reviews, but at heart it&apos;s still the
           same thing: one maker, sewing each piece by hand, packing each order with care.
         </p>
         <p>
-          Every garland and banner is made to order or one of just a few — so when you buy something
+          Every garland and banner is made to order or one of just a few, so when you buy something
           here, you&apos;re getting a genuinely handmade piece, not a factory print. Thank you for
           supporting a small, family-run business. It means the world. 💛
         </p>
         <p className="text-sm text-muted">
-          <em>(Placeholder copy — Kristol, edit this anytime in the admin to tell your story in your own words, and add a photo.)</em>
+          <em>(Placeholder copy, Kristol, edit this anytime in the admin to tell your story in your own words, and add a photo.)</em>
         </p>
       </div>
 

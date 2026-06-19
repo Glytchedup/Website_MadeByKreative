@@ -37,7 +37,7 @@ export default async function AdminOrders() {
                   <li key={i.id}>{i.quantity} × {i.productTitle} ({i.variantName})</li>
                 ))}
               </ul>
-              {o.oversellFlag && <p className="mt-2 text-sm font-semibold text-red-600">⚠️ Possible oversell — review & refund if needed.</p>}
+              {o.oversellFlag && <p className="mt-2 text-sm font-semibold text-red-600">⚠️ Possible oversell, review & refund if needed.</p>}
               {o.shippingAddress && (
                 <p className="mt-2 text-xs text-muted">Ship to: {o.shippingAddress}</p>
               )}

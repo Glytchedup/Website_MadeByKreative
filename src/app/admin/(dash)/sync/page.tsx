@@ -67,7 +67,7 @@ export default async function SyncDashboard({
         {conflicts.length === 0 && <p className="text-sm text-muted">No conflicts 🎉</p>}
         {conflicts.map((c) => (
           <div key={c.id} className="card p-4">
-            <p className="font-semibold">{c.variant.product.title} — {c.variant.name}</p>
+            <p className="font-semibold">{c.variant.product.title}, {c.variant.name}</p>
             <p className="text-sm text-terracotta">{c.type}: {c.detail}</p>
             <p className="mt-1 text-sm">Site says <strong>{c.siteQty ?? "—"}</strong>, Etsy says <strong>{c.etsyQty ?? "—"}</strong></p>
             <form action={resolveConflict} className="mt-2 flex flex-wrap gap-2">

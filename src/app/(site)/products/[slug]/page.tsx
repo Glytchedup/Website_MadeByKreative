@@ -135,7 +135,7 @@ export default async function ProductPage({
 
           {product.isSeed && (
             <p className="mt-6 rounded-soft bg-terracotta/10 p-3 text-sm text-terracotta">
-              ⚠️ Sample data — replace with your real listing or connect Etsy to import.
+              ⚠️ Sample data, replace with your real listing or connect Etsy to import.
             </p>
           )}
         </div>

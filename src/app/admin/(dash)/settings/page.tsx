@@ -41,7 +41,7 @@ export default async function AdminSettings() {
       <p className="mt-1 text-sm text-muted">Edit shop policies and shipping. Etsy poll interval & low-stock threshold are set in <code>.env</code> (currently {tunables.pollIntervalSeconds()}s / ≤{tunables.lowStockThreshold()}).</p>
 
       <div className="mt-6 space-y-4">
-        <SettingForm label="Flat shipping rate (cents)" k="shipping_flat_cents" value={shippingCents} type="number" help="e.g. 550 = $5.50. Shown at checkout. PLACEHOLDER — set your real rate." />
+        <SettingForm label="Flat shipping rate (cents)" k="shipping_flat_cents" value={shippingCents} type="number" help="e.g. 550 = $5.50. Shown at checkout. PLACEHOLDER, set your real rate." />
         <SettingForm label="Shipping policy" k="policy_shipping" value={shippingPolicy} textarea help="Shown on the Policies page." />
         <SettingForm label="Returns & exchanges policy" k="policy_returns" value={returnsPolicy} textarea />
         <SettingForm label="FAQ" k="policy_faq" value={faq} textarea />

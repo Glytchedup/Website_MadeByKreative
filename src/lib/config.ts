@@ -5,7 +5,7 @@ export const siteConfig = {
   name: process.env.NEXT_PUBLIC_SITE_NAME || "MadeByKreative",
   url: (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, ""),
   description:
-    "Handmade fabric garlands, banners, bunting & keychains — made with love in Gilbert, Arizona by Kristol.",
+    "Handmade fabric garlands, banners, bunting & keychains, made with love in Gilbert, Arizona by Kristol.",
   maker: "Kristol",
   location: "Gilbert, Arizona",
   etsyShopUrl: "https://www.etsy.com/shop/MadeByKreative",
