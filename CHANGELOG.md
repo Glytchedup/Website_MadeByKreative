@@ -12,6 +12,8 @@ where judgment was exercised and why.
   materials, Etsy fees, "you keep," and **profit per hour** (color-coded) plus the price needed to
   earn $20/hr. Verified in a 390px viewport: bow 36" → $19/hr (green), mini 48" → $8/hr (flagged).
 - Sources: `scripts/guide-head.html`, `scripts/guide-calculator.html`.
+- **Hosted** at `website-madebykreative.vercel.app/guide.html` (copied into `public/` by
+  `build-guide.sh`) so Kristol can open it from a phone link.
 
 ## [0.4.5] — Reframe strategy around profit-per-hour (time is the constraint)
 
