@@ -8,15 +8,18 @@ per-variant fee + profit calculator)._
 
 ## TL;DR — the 7 highest-value moves
 
-1. **Price by size, not flat.** Every multi-size listing currently charges **one price for all
-   sizes** (e.g. the Halloween rag garland is $15 whether it's 4ft or 6ft — the 6ft uses ~50% more
-   fabric and time). Tiered pricing alone lifts the average order ~**$3.10/item** with zero new work.
+1. **Pricing is already well-tiered — fix the website undercharge instead.** _(Correction:)_ Kristol's
+   Etsy listings already price each size separately (rag garlands $15 / $17.50 / $20 by length, etc.).
+   The earlier "flat pricing" finding was a **bug in our sync** that flattened every variant to the
+   lowest price — which also made the **live website undercharge** for larger sizes (a 6ft garland
+   sold for $15 instead of $20). **Both are now fixed** (code + data backfilled). Remaining real
+   pricing opportunity is small and targeted (≈$1/item), not a wholesale re-pricing.
 2. **Raise the keychain $8 → $12.** At $8, after Etsy fees (and a 15% offsite-ad hit) you net
    ~$5.59 *before* materials and labor. Market comparable wristlets sell at **$11+**. This is your
    worst margin item.
-3. **Fix the underpriced outliers:** the St. Patrick's rag garland is $12 flat while every other rag
-   garland is $15; the Fall **bow** garland charges the same $20 for a 36" and a 70" (the 70" should
-   be ~$30 — bows are labor-heavy).
+3. **Raise the genuinely underpriced items:** both single-size **Birthday buntings are $15** but are
+   full 73" regular banners — below Kristol's *own* regular-pennant line ($20). Optional small bumps:
+   the Fall **bow** garland's 70" ($25→$30) and the largest regular/medium pennants (+$2).
 4. **Fill all 13 Etsy tags on every listing.** 9 of 16 products use 8 or fewer; the Fall Bow garland
    uses **only 5**. Each empty slot is lost search exposure, and single-word tags ("fall", "green",
    "santa") waste a slot — replace with long-tail phrases ("glow in the dark", "halloween mantel").
@@ -71,13 +74,14 @@ Three takeaways that override everything else:
    Etsy when we synced, so the site only has the 16 off-season items. _When you relist or restock
    them on Etsy, they auto-sync to the site_ — but right now the site is showing your weakest season.
 3. **A sold-out bestseller is lost money.** That $1,700 listing sold out — meaning demand exceeded
-   supply at the current price. This is the clearest possible signal to **make more next year and
-   price the large size higher** (see §1 tiering).
+   supply. This is the clearest possible signal to **make more next year** (and you have room to nudge
+   the largest size up a little, as you already tier the others).
 
 ### The hero product is the **shabby rag garland**, in every season
 Patriotic rag, Spring rag, St. Patrick's rag all chart. The *form* that sells is the **raw-edge
-shabby rag garland** — whatever the seasonal fabric. **Apply the tiered pricing in §1 to rag garlands
-first**, and make sure a rag garland is stocked and front-and-center for each upcoming season.
+shabby rag garland** — whatever the seasonal fabric. They're already well-priced; the lever here is
+**keeping a rag garland in stock and front-and-center for each upcoming season**, with the §2
+title/tag polish applied.
 
 ### Where traffic comes from (and the opportunity)
 - **78% from Etsy** (Etsy browse/app 1,439, Etsy search 430, Etsy SEO 172) — this is why the §2 tag
@@ -130,30 +134,40 @@ package.
 > variant, and the **"Profit on own site"** column tells you what you actually keep. Target rule of
 > thumb for handmade: aim for net-after-fees ≥ **2.5–3× materials** so your time is actually paid.
 
-### The flat-pricing problem (biggest finding)
-Materials and labor scale with size, but your prices don't:
+### Correction: prices are already tiered (the real bug was ours)
+An earlier version of this report claimed every listing was priced "flat." **That was wrong** — it
+came from a bug in our Etsy sync that stored every size at the listing's *lowest* price. Pulling the
+real per-offering prices from Etsy shows Kristol already tiers by size:
 
-| Product type | Current | Suggested tiers |
+| Product type | **Actual current Etsy prices** | What our DB had stored (wrong) |
 |---|---|---|
-| Shabby rag garland | **$15 flat** (4/5/6 ft) | 4ft **$14** · 5ft **$17** · 6ft **$20** |
-| St. Pat's rag (outlier) | **$12 flat** (3–6 ft) | 3ft **$12** · 4ft **$14** · 5ft **$17** · 6ft **$20** |
-| Regular pennant (7×5½) | **$15–16 flat** (48/67 in) | 48in **$16** · 67in **$22** |
-| Medium pennant (5½×5) | **$14 flat** | 48in **$15** · 67in **$20** |
-| Mini pennant (3½×3) | **$10 flat** | 48in **$10** · 72in **$14** |
-| Fall **bow** garland | **$20 flat** (36/70 in) | 36in **$18** · 70in **$30** |
-| Wristlet keychain | **$8** | **$12** |
+| Shabby rag garland | 4ft $15 · 5ft **$17.50** · 6ft **$20** | $15 for all |
+| St. Pat's rag | 3ft $12 · 4ft $15 · 5ft $17.50 · 6ft $20 | $12 for all |
+| Regular pennant (7×5½) | 48in $16 · 67in **$20** | $16 for all |
+| Medium pennant (5½×5) | 48in $14 · 67in **$18** | $14 for all |
+| Mini pennant (3½×3) | 48in $10 · 72in **$15** | $10 for all |
+| Fall **bow** garland | 36in $20 · 70in **$25** | $20 for all |
+| Wristlet keychain | $8 (single price) | $8 ✓ |
 
-Notes:
-- The **small size usually stays at or just below today's price** (so you keep an affordable entry
-  point and don't lose price-sensitive buyers), while the **large size captures its real cost**.
-- **Bow garland** is the most underpriced: a 70" bow garland is ~2× the bows/labor of the 36" but
-  priced identically. $30 for the long one is conservative for hand-tied bows.
-- **Single-size "Default" banners** (both Birthday buntings, 73") are priced $15 but are full-size
-  73" regular banners — comparable to the $22 tier. **Recommendation: add a 48" size option** to
-  each so you have a $16 entry point *and* a $22 full size, like your other regular-pennant listings.
+**Fixed:** `src/lib/etsy/client.ts` now reads each offering's price, `syncContentFromEtsy` writes
+per-variant prices on import *and* refreshes them on every sync, and a one-off backfill
+(`scripts/fix-variant-prices.ts`) corrected the 20 stored prices. The **live website was undercharging**
+for larger sizes (it served the flattened price) — that's now corrected.
 
-Full per-variant numbers (current → suggested → fees → net on Etsy with/without ads → net on your
-own site) are in **`etsy-pricing-model.csv`**.
+### The actual remaining opportunity (small & targeted)
+With correct prices, the catalog average is **$15.78**, and only **14 of 41 variants** have any
+suggested change — most optional:
+
+| Change | Listing(s) | Why |
+|---|---|---|
+| **$8 → $12** | Wristlet Keychain (all 6 colors) | The one clearly underpriced item; nets ~$5.59 at $8 after fees+ads; market is $11+. |
+| **$15 → $20** | Birthday Bunting ×2 (Orange, Lime) | Full 73" regular banners priced *below* Kristol's own regular-pennant line ($20). Consider also adding a 48" $16 size. |
+| $25 → $30 _(optional)_ | Fall Bow Garland, 70" | Hand-tied bows = a lot of labor on the long one. |
+| $20 → $22 _(optional)_ | Easter / Valentine / St. Pat's regular bunting, 67–68" | Slight headroom on the big size. |
+| $18 → $20 _(optional)_ | Christmas / Gingerbread bunting, 67" | Slight headroom on the big size. |
+
+**Everything else — all rag garlands, the mini bunting — is already well-priced; leave it.** Full
+per-variant numbers (now with correct current prices) are in **`etsy-pricing-model.csv`**.
 
 ### Other pricing notes
 - **Free shipping nudges ranking.** Etsy gives a search boost to items in shops offering free US
@@ -225,7 +239,7 @@ Etsy SEO rules applied below (per current best-practice guidance — sources at 
 - **Title:** `Happy Birthday Bunting Banner, Fabric Pennant Garland, Handmade Party Decor, Reusable Birthday Backdrop`
 - **Tags:** birthday bunting · happy birthday · birthday garland · fabric pennant · birthday decor · birthday banner · party decor · reusable banner · birthday backdrop · fabric bunting · party garland · celebration decor · birthday party
 
-**12. St. Patrick's Day Shabby Rag Garland** _(raise from $12 flat to tiered)_
+**12. St. Patrick's Day Shabby Rag Garland** _(already tiered $12/$15/$17.50/$20 — pricing fine)_
 - **Title:** `St Patricks Day Rag Garland, Green Fabric Tie Banner, Handmade Shabby Shamrock Mantel Decor, Irish`
 - **Tags:** st patricks day · rag garland · green garland · fabric banner · shamrock decor · st patricks decor · irish decor · shabby garland · mantel decor · st patricks banner · fabric rag banner · spring garland · party decor
 

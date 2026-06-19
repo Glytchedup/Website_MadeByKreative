@@ -3,6 +3,20 @@
 All significant decisions and build steps for the MadeByKreative storefront. Entries note
 where judgment was exercised and why.
 
+## [0.4.1] — Fix per-size price flattening (website undercharge)
+
+- **Bug:** the content sync stored every variant at the listing's *base* (lowest) price, so all sizes
+  showed one price. Etsy actually prices each size offering separately, so the storefront
+  **undercharged** for larger sizes (e.g. a 6ft rag garland sold for $15 instead of $20). The earlier
+  "flat pricing is the #1 problem" finding was an artifact of this bug, not Kristol's real pricing.
+- **Fix:** `EtsyInventory.offerings[]` now carries `price`; `syncContentFromEtsy` reads each
+  offering's price for the variant on import **and** refreshes variant prices on every content sync;
+  `basePriceCents` = lowest offering. One-off `scripts/fix-variant-prices.ts` repaired the 20
+  mispriced variants from live Etsy data (`scripts/etsy-real-prices.ts` audits real vs stored).
+- **Docs corrected:** `etsy-optimization.md` / `RECOMMENDATIONS.md` / CSV / PDF now reflect that
+  prices are already tiered; real remaining opportunity is small (keychain $8→$12; Birthday banners
+  $15→$20; a few optional large-size bumps). `npx tsc --noEmit` passes.
+
 ## [0.4.0] — Pricing/SEO optimization + content fixes
 
 - **Etsy optimization report** (`docs/etsy-optimization.md`) + a reproducible per-variant pricing &

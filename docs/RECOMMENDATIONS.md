@@ -9,8 +9,10 @@ _Full reasoning & data is in `etsy-optimization.md`; the price calculator is `et
 
 1. **Your shop sells out of its winners.** Patriotic / 4th-of-July rag garlands are ~70% of your
    yearly sales and sold out again this year. **Make more next year and price the big sizes higher.**
-2. **Price by size, not one price for all sizes.** Right now a 4ft and a 6ft garland cost the same —
-   the 6ft uses way more fabric and time. New tiered prices are below.
+2. **Your prices are already well-structured** — you charge more for bigger sizes, which is exactly
+   right. Only a few small raises are worth making (below). _(An earlier draft of this file claimed
+   your prices were "flat" — that was a glitch in our data import, now fixed. It also meant your
+   website was accidentally charging the small-size price for every size; that's corrected too.)_
 3. **Your listings convert great (5.7%+).** The problem isn't your listings — it's **traffic** and
    **running out of stock**. Keep bestsellers in stock and get more eyes on them.
 4. **Pinterest is your best free traffic outside Etsy.** Instagram/Facebook do almost nothing. Pin
@@ -20,43 +22,32 @@ _Full reasoning & data is in `etsy-optimization.md`; the price calculator is `et
 
 ---
 
-## 💲 Pricing changes
+## 💲 Pricing — you're mostly already there
 
-> Rule of thumb: keep the **small size near today's price** (so budget shoppers still buy), and
-> **charge more for the big size** (where your real cost is). New prices below.
+**Your sizes are already priced correctly on Etsy** (bigger costs more), so there's no big re-pricing
+job. Only these are worth changing:
 
-### Rag garlands (your hero product)
-| Listing | Now | New prices |
+### Worth doing
+| Listing | Change | Why |
 |---|---|---|
-| Halloween Shabby Rag Garland | $15 all sizes | 4ft **$14** · 5ft **$17** · 6ft **$20** |
-| Halloween Spooky Rag Garland | $15 all sizes | 4ft **$14** · 5ft **$17** · 6ft **$20** |
-| Halloween Stripe & Dot Rag Garland | $15 all sizes | 4ft **$14** · 5ft **$17** · 6ft **$20** |
-| Fall Shabby Rag Garland | $15 all sizes | 4ft **$14** · 5ft **$17** · 6ft **$20** |
-| Spring Shabby Rag Garland | $15 all sizes | 4ft **$14** · 5ft **$17** · 6ft **$20** |
-| St. Patrick's Rag Garland ⚠️ | **$12 all sizes** | 3ft **$12** · 4ft **$14** · 5ft **$17** · 6ft **$20** |
+| **Fabric Wristlet Keychain** (all colors) | **$8 → $12** | At $8 you barely clear costs after Etsy fees; similar handmade ones sell at $11+. This is your one clearly-underpriced item. |
+| **Birthday Bunting — Orange/Confetti** | **$15 → $20** | It's a full 73" regular banner but priced below your *other* regular pennants (which are $20). Optionally add a 48" size at **$16** too. |
+| **Birthday Bunting — Lime/Sprinkles** | **$15 → $20** | Same as above. |
 
-⚠️ The St. Patrick's rag is your only rag garland priced at $12 — it should match the others ($15+).
-
-### Bunting banners (pennants)
-| Listing | Now | New prices |
+### Optional small bumps (only if you like)
+| Listing | Size | Change |
 |---|---|---|
-| Easter Bunting (regular 7×5½) | $16 all sizes | 48in **$16** · 67in **$22** |
-| Valentine Bunting (regular) | $16 all sizes | 48in **$16** · 67in **$22** |
-| St. Patrick's Bunting (regular) | $16 all sizes | 48in **$16** · 68in **$22** |
-| Christmas Stocking Bunting (medium 5½×5) | $14 all sizes | 48in **$15** · 67in **$20** |
-| Gingerbread Bunting (medium) | $14 all sizes | 48in **$15** · 67in **$20** |
-| Mini St. Patrick's Bunting (mini 3½×3) | $10 all sizes | 48in **$10** · 72in **$14** |
-| Birthday Bunting (Orange/Confetti) | $15 (one size) | **$22** — and add a 48in **$16** option |
-| Birthday Bunting (Lime/Sprinkles) | $15 (one size) | **$22** — and add a 48in **$16** option |
+| Fall **Bow** Garland | 70in | $25 → **$30** _(lots of hand-tied bows)_ |
+| Easter / Valentine / St. Pat's regular bunting | 67–68in | $20 → **$22** |
+| Christmas / Gingerbread bunting | 67in | $18 → **$20** |
 
-### Bows & accessories
-| Listing | Now | New prices |
-|---|---|---|
-| Fall Shabby **Bow** Garland ⚠️ | $20 all sizes | 36in **$18** · 70in **$30** |
-| Fabric Wristlet Keychain ⚠️ | **$8** | **$12** |
+### Leave these alone — already well-priced ✅
+All your **rag garlands** (Halloween, Fall, Spring, St. Patrick's) are already tiered
+**$15 / $17.50 / $20** by length, and the **mini bunting** is **$10 / $15**. Nothing to change.
 
-⚠️ The bow garland charges the same for a 36in and a 70in — the long one is double the work. And the
-keychain at $8 barely breaks even after Etsy fees; similar ones sell for $11+.
+> _Note: an earlier draft of this list told you to re-price everything and flagged the St. Patrick's
+> rag as "too cheap at $12." That was wrong — it's actually $12/$15/$17.50/$20 like your other
+> garlands. The mistake came from a bug in our website's price import (now fixed)._
 
 ---
 

@@ -211,7 +211,13 @@ export interface EtsyInventory {
   products: {
     product_id: number;
     sku: string;
-    offerings: { offering_id: number; quantity: number; is_enabled: boolean }[];
+    offerings: {
+      offering_id: number;
+      quantity: number;
+      is_enabled: boolean;
+      // Per-offering price: Etsy lists each size/variation at its own price.
+      price?: { amount: number; divisor: number; currency_code: string };
+    }[];
     property_values: { property_name: string; values: string[] }[];
   }[];
 }

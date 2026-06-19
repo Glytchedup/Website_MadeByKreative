@@ -33,27 +33,35 @@ const CAT: Record<string, Cat> = {
 };
 
 // Suggested price in dollars by category + size label.
+//
+// IMPORTANT: Kristol's Etsy prices are ALREADY tiered by size (the earlier
+// "flat pricing" finding was a sync bug that flattened variants to the base
+// price — now fixed). So these tiers mostly MATCH her current prices; the only
+// real changes are the keychain ($8->$12), the single-size Birthday banners
+// ($15->$20, below her own regular-pennant line), and a few optional bumps on
+// the largest sizes where there's headroom.
 function suggest(cat: Cat, label: string): number {
   const lc = label.toLowerCase();
   const num = parseFloat(lc) || 0; // first number in label
   const inches = lc.includes("inch") ? num : null;
   switch (cat) {
     case "keychain":
-      return 12;
+      return 12; // was $8 — genuinely underpriced
     case "rag": {
+      // Already well-priced; matches current (3/4/5/6 ft).
       const feet = lc.includes("inch") ? Math.round(num / 12) : Math.round(num);
-      const map: Record<number, number> = { 3: 12, 4: 14, 5: 17, 6: 20 };
-      return map[feet] ?? 14 + (feet - 4) * 3;
+      const map: Record<number, number> = { 3: 12, 4: 15, 5: 17.5, 6: 20 };
+      return map[feet] ?? 15 + (feet - 4) * 2.5;
     }
     case "bow":
-      return (inches ?? num) <= 45 ? 18 : 30;
+      return (inches ?? num) <= 45 ? 20 : 30; // 70in $25 -> $30 (optional bump)
     case "regular":
-      if (lc === "default") return 22; // single-size ~73" regular banner
-      return (inches ?? num) <= 50 ? 16 : 22;
+      if (lc === "default") return 20; // Birthday 73" banner: $15 -> $20
+      return (inches ?? num) <= 50 ? 16 : 22; // 67/68in $20 -> $22 (optional)
     case "mini":
-      return (inches ?? num) <= 50 ? 10 : 14;
+      return (inches ?? num) <= 50 ? 10 : 15; // matches current
     case "medium":
-      return (inches ?? num) <= 50 ? 15 : 20;
+      return (inches ?? num) <= 50 ? 14 : 20; // 67in $18 -> $20 (optional)
   }
 }
 

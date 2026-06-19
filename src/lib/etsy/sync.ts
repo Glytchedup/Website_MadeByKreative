@@ -63,6 +63,13 @@ function slugify(s: string): string {
     .slice(0, 80);
 }
 
+// Convert an Etsy {amount, divisor} money object to integer cents. Etsy prices
+// each size/variation offering separately, so variant prices come from here.
+function priceToCents(price?: { amount: number; divisor: number } | null): number | null {
+  if (!price || !price.divisor) return null;
+  return Math.round((price.amount / price.divisor) * 100);
+}
+
 /**
  * Import/mirror listing content from Etsy. On FIRST import of a listing we also
  * seed the ledger quantity ("initial"). On subsequent runs we update content
@@ -118,15 +125,23 @@ export async function syncContentFromEtsy(): Promise<{
         /* images are best-effort */
       }
 
+      // Fetch inventory once: each size offering carries its OWN price, and we
+      // need it for both new products and price refreshes on existing ones.
+      const inv = await getListingInventory(listing.listing_id).catch(() => null);
+      const offeringPrices = (inv?.products ?? [])
+        .map((p) => priceToCents(p.offerings[0]?.price))
+        .filter((c): c is number => c != null);
+      // Base ("from") price = the lowest size's price; fall back to listing price.
+      const basePriceCents = offeringPrices.length ? Math.min(...offeringPrices) : priceCents;
+
       if (!existing) {
         // First import: create product + variants from Etsy inventory offerings.
-        const inv = await getListingInventory(listing.listing_id).catch(() => null);
         const created = await prisma.product.create({
           data: {
             slug: `${slugify(title)}-${listing.listing_id}`,
             title,
             description,
-            basePriceCents: priceCents,
+            basePriceCents,
             collectionId: collection?.id,
             images: JSON.stringify(images),
             tags: JSON.stringify(tags),
@@ -141,12 +156,14 @@ export async function syncContentFromEtsy(): Promise<{
             const offering = p.offerings[0];
             const variantName =
               p.property_values?.flatMap((pv) => pv.values).join(" / ") || "Default";
+            // Each size has its own Etsy price; fall back to the listing price.
+            const variantCents = priceToCents(offering?.price) ?? priceCents;
             const variant = await prisma.variant.create({
               data: {
                 productId: created.id,
                 name: variantName,
                 sku: p.sku || null,
-                priceCents,
+                priceCents: variantCents,
                 quantity: 0,
                 etsyListingId: String(listing.listing_id),
                 etsyProductId: String(p.product_id),
@@ -190,19 +207,31 @@ export async function syncContentFromEtsy(): Promise<{
         }
         imported++;
       } else {
-        // Content-only update (never touch quantity here).
+        // Content update (never touch QUANTITY here — that's the two-way flow).
         await prisma.product.update({
           where: { id: existing.id },
           data: {
             title,
             description,
-            basePriceCents: priceCents,
+            basePriceCents,
             images: JSON.stringify(images),
             tags: JSON.stringify(tags),
             collectionId: collection?.id ?? existing.collectionId,
             status: listing.state === "active" ? "active" : "draft",
           },
         });
+        // Refresh per-variant PRICES — sizes can be repriced on Etsy. (Price is
+        // content, not inventory; quantity is left to receipts/reconciliation.)
+        if (inv) {
+          for (const p of inv.products) {
+            const variantCents = priceToCents(p.offerings[0]?.price);
+            if (variantCents == null) continue;
+            await prisma.variant.updateMany({
+              where: { productId: existing.id, etsyProductId: String(p.product_id) },
+              data: { priceCents: variantCents },
+            });
+          }
+        }
         updated++;
       }
     }
