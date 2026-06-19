@@ -3,6 +3,31 @@
 All significant decisions and build steps for the MadeByKreative storefront. Entries note
 where judgment was exercised and why.
 
+## [0.2.0] — New storefront design (the "shell")
+
+Adopted the provided MadeByKreative design shell as the homepage and wired it to live data.
+
+- **`lib/catalog.ts`** maps our DB (Etsy-synced products/collections/variants) into the
+  shell's feed shape: `{ shop, seasonOrder, products[] }` with season (collection), inferred
+  `type` (pennant/rag/bow/keychain), price, total stock (for scarcity badges), images, tags,
+  sizes (variant labels), and per-variant ids so Add-to-cart targets the right variant.
+- **`components/storefront/Storefront.tsx`** ports the full design (hero with swaying bunting,
+  trust strip, new arrivals, shop-by-season, featured grid + season filter, custom-banner
+  tool, maker's story, reviews, footer, product modal) as a client component. Fonts
+  (Newsreader / Hanken Grotesk / Caveat) loaded in the layout `<head>`.
+- **Decision:** "Add to cart" wires to our real `CartProvider` + on-site Stripe checkout
+  (keeping customers on-site — the whole point), NOT the prototype's Etsy links. The Etsy
+  "View full listing" remains as a secondary CTA in the modal; the custom-banner CTA points
+  to our /contact. The prototype's `support.js`/DCLogic runtime is not used.
+- **Decision:** the design is a one-page storefront with its own header/footer, so inner
+  pages (shop, cart, about, policies, contact, collections, products, checkout) moved into a
+  `(site)` route group whose layout supplies the existing Header/Footer; the homepage renders
+  the full design standalone. URLs are unchanged.
+- **Assumptions (placeholders):** maker portrait is a styled placeholder block (no photo
+  yet); reviews are 3 representative quotes; custom-banner price estimate uses simple
+  style/length math. Verified: Add-to-cart increments the real cart (0→1), build passes,
+  all routes 200.
+
 ## [0.1.2] — Full content sync: collections + auto-archive
 
 Made Etsy → site content sync truly complete so new products and photos flow in

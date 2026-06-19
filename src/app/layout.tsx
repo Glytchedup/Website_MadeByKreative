@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { siteConfig } from "@/lib/config";
 import { CartProvider } from "@/components/cart/CartProvider";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 import { Analytics } from "@/components/Analytics";
 
 export const metadata: Metadata = {
@@ -38,6 +36,15 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        {/* Storefront design fonts */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Hanken+Grotesk:wght@400;500;600;700&family=Caveat:wght@500;600;700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body>
         <a
           href="#main"
@@ -45,11 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Skip to content
         </a>
-        <CartProvider>
-          <Header />
-          <main id="main">{children}</main>
-          <Footer />
-        </CartProvider>
+        <CartProvider>{children}</CartProvider>
         <Analytics />
       </body>
     </html>
