@@ -1,0 +1,58 @@
+<style>
+  @page { size: Letter; margin: 0.7in 0.65in; }
+  body {
+    font-family: "Segoe UI", "Hanken Grotesk", Arial, sans-serif;
+    color: #2b2724;
+    line-height: 1.5;
+    font-size: 11pt;
+    max-width: 100%;
+  }
+  h1 {
+    font-size: 24pt;
+    color: #b5562e;            /* terracotta */
+    border-bottom: 3px solid #e7d8c4;
+    padding-bottom: 6px;
+    margin-bottom: 4px;
+  }
+  h2 {
+    font-size: 15pt;
+    color: #7a8450;            /* sage */
+    margin-top: 22px;
+    border-bottom: 1px solid #eee3d4;
+    padding-bottom: 3px;
+  }
+  h3 {
+    font-size: 12pt;
+    color: #b5562e;
+    margin-top: 16px;
+    margin-bottom: 2px;
+  }
+  h3 em { color: #9a8f80; font-weight: normal; font-size: 10pt; }
+  p, li { font-size: 10.5pt; }
+  em { color: #6b6358; }
+  hr { border: none; border-top: 2px dotted #d9c9b3; margin: 18px 0; }
+  code, td, th { font-variant-numeric: tabular-nums; }
+  strong { color: #1f1b18; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 8px 0 12px;
+    font-size: 9.5pt;
+  }
+  th {
+    background: #f3ece1;
+    color: #5c5247;
+    text-align: left;
+    padding: 5px 8px;
+    border: 1px solid #e2d4c0;
+  }
+  td { padding: 5px 8px; border: 1px solid #ece2d4; vertical-align: top; }
+  tr:nth-child(even) td { background: #faf6f0; }
+  /* keep tables and their headings from splitting awkwardly */
+  table, tr { page-break-inside: avoid; }
+  h2, h3 { page-break-after: avoid; }
+  ul { margin: 4px 0 10px; padding-left: 20px; }
+  li { margin: 2px 0; }
+  /* the copy-paste Title/Tags blocks (paragraphs after an h3) */
+  h3 + p, h3 + p + p { background: #faf6f0; padding: 4px 8px; border-left: 3px solid #cdb89a; }
+</style>
