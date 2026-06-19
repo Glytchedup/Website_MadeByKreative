@@ -1,0 +1,100 @@
+<hr>
+<h2 id="calculator">🧮 Your profit calculator</h2>
+<p>Pick a banner, then type in <strong>your real fabric cost and how many minutes it takes you</strong>.
+It shows what you keep per piece — and, most importantly, <strong>per hour of your time</strong>. Try
+different prices to see what feels right. Nothing is saved; it's just for you to play with.</p>
+
+<div class="calc">
+  <label for="prod">Which banner?</label>
+  <select id="prod"></select>
+
+  <div class="row">
+    <div>
+      <label for="fab">Your fabric ($ / yard)</label>
+      <input id="fab" type="number" inputmode="decimal" step="0.5" value="10">
+    </div>
+    <div>
+      <label for="min">Minutes you spend on it</label>
+      <input id="min" type="number" inputmode="numeric" step="1" value="40">
+    </div>
+    <div>
+      <label for="price">Price you charge ($)</label>
+      <input id="price" type="number" inputmode="decimal" step="0.5" value="20">
+    </div>
+  </div>
+
+  <div id="result" class="result">
+    <div class="lbl">You earn per hour of making</div>
+    <div class="big" id="perhour">—</div>
+    <div class="verdict" id="verdict"></div>
+    <div class="pill" id="suggest"></div>
+  </div>
+
+  <div class="breakdown" id="breakdown"></div>
+  <p class="hint">Materials assume: twill tape $0.30/yd, twine $0.15, thread/notions $0.25, packaging
+  $0.85, and (for Birthday) vinyl lettering $0.60. Etsy fees ≈ 9.5% + $0.45 per sale. Shipping is
+  handled separately, so it's not counted here. These are starting estimates — your numbers win.</p>
+</div>
+
+<script>
+(function () {
+  // Per-banner defaults (same as the cost model). fabricYd & tapeYd drive materials;
+  // min = estimated minutes; rec = the suggested price.
+  var PRODUCTS = [
+    { n: "Rag garland — 3 ft",            fabricYd:0.40, tapeYd:0,   twine:1, htv:0, min:25, rec:15 },
+    { n: "Rag garland — 4 ft",            fabricYd:0.55, tapeYd:0,   twine:1, htv:0, min:32, rec:18 },
+    { n: "Rag garland — 5 ft",            fabricYd:0.70, tapeYd:0,   twine:1, htv:0, min:42, rec:22 },
+    { n: "Rag garland — 6 ft",            fabricYd:0.85, tapeYd:0,   twine:1, htv:0, min:52, rec:26 },
+    { n: "Bow garland — 36 in",           fabricYd:0.35, tapeYd:0,   twine:1, htv:0, min:40, rec:20 },
+    { n: "Bow garland — 70 in",           fabricYd:0.60, tapeYd:0,   twine:1, htv:0, min:62, rec:30 },
+    { n: "Regular pennant — 48 in",       fabricYd:0.46, tapeYd:1.5, twine:0, htv:0, min:55, rec:20 },
+    { n: "Regular pennant — 67 in",       fabricYd:0.66, tapeYd:2.0, twine:0, htv:0, min:75, rec:28 },
+    { n: "Medium pennant — 48 in",        fabricYd:0.35, tapeYd:1.5, twine:0, htv:0, min:45, rec:18 },
+    { n: "Medium pennant — 67 in",        fabricYd:0.54, tapeYd:2.0, twine:0, htv:0, min:62, rec:24 },
+    { n: "Mini pennant — 48 in",          fabricYd:0.23, tapeYd:1.5, twine:0, htv:0, min:50, rec:12 },
+    { n: "Mini pennant — 72 in",          fabricYd:0.34, tapeYd:2.2, twine:0, htv:0, min:70, rec:20 },
+    { n: "Birthday bunting — 73 in",      fabricYd:0.70, tapeYd:2.2, twine:0, htv:1, min:70, rec:22 }
+  ];
+  var TAPE=0.30, TWINE=0.15, HTV=0.60, NOTIONS=0.25, PACK=0.85, FEE_PCT=0.095, FEE_FIX=0.45;
+
+  var sel=document.getElementById("prod"), fab=document.getElementById("fab"),
+      mn=document.getElementById("min"), pr=document.getElementById("price");
+
+  PRODUCTS.forEach(function(p,i){ var o=document.createElement("option"); o.value=i; o.textContent=p.n; sel.appendChild(o); });
+
+  function money(x){ return "$"+x.toFixed(2); }
+  function materials(p, fabPerYd){
+    return p.fabricYd*fabPerYd + p.tapeYd*TAPE + (p.twine?TWINE:0) + (p.htv?HTV:0) + NOTIONS + PACK;
+  }
+  function calc(){
+    var p=PRODUCTS[+sel.value];
+    var fabPerYd=parseFloat(fab.value)||0, mins=parseFloat(mn.value)||0, price=parseFloat(pr.value)||0;
+    var mat=materials(p, fabPerYd);
+    var fee=FEE_PCT*price+FEE_FIX;
+    var profit=price-mat-fee;
+    var perHr= mins>0 ? profit/(mins/60) : 0;
+    // price needed to earn $20/hr
+    var fair=(mat + (mins/60)*20 + FEE_FIX)/(1-FEE_PCT);
+
+    document.getElementById("perhour").textContent = (mins>0? "$"+perHr.toFixed(0)+"/hr" : "—");
+    var box=document.getElementById("result");
+    var verdict=document.getElementById("verdict");
+    box.className="result " + (perHr>=16?"good":perHr>=11?"ok":"low");
+    verdict.textContent = mins<=0 ? "" :
+      perHr>=16 ? "Wonderful — your time is well paid 💚" :
+      perHr>=11 ? "Solid — a little room to nudge up" :
+      "Let's get this one paying you more 🤔";
+    document.getElementById("suggest").textContent =
+      "To earn $20/hr, charge about $"+ (Math.round(fair*2)/2).toFixed(2);
+    document.getElementById("breakdown").innerHTML =
+      "<div><span>Price</span><span>"+money(price)+"</span></div>"+
+      "<div><span>− Materials</span><span>"+money(mat)+"</span></div>"+
+      "<div><span>− Etsy fees</span><span>"+money(fee)+"</span></div>"+
+      "<div><strong>= You keep</strong><strong>"+money(profit)+"</strong></div>";
+  }
+  function load(){ var p=PRODUCTS[+sel.value]; mn.value=p.min; pr.value=p.rec; calc(); }
+  sel.addEventListener("change", load);
+  [fab,mn,pr].forEach(function(el){ el.addEventListener("input", calc); });
+  sel.value=4; load(); // default to the well-priced bow garland 36"
+})();
+</script>

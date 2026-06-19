@@ -1,0 +1,51 @@
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#b5562e">
+<style>
+  :root { --terra:#b5562e; --sage:#7a8450; --cream:#fbf7f1; --ink:#2b2724; --line:#e7d8c4; }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: -apple-system, "Segoe UI", "Hanken Grotesk", Roboto, Arial, sans-serif;
+    color: var(--ink); background: var(--cream);
+    line-height: 1.6; font-size: 17px;
+    max-width: 820px; margin: 0 auto; padding: 18px 16px 60px;
+  }
+  h1 { font-size: 1.7rem; color: var(--terra); line-height: 1.2; margin: .2em 0 .1em; }
+  h2 { font-size: 1.3rem; color: var(--sage); margin-top: 1.6em; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+  h3 { font-size: 1.08rem; color: var(--terra); margin-top: 1.2em; margin-bottom: .2em; }
+  h3 em { color:#9a8f80; font-weight: normal; font-size: .85em; }
+  a { color: var(--terra); }
+  blockquote { background:#fff; border-left: 4px solid #cdb89a; margin: 1em 0; padding: 10px 14px; border-radius: 6px; }
+  hr { border: none; border-top: 2px dotted #d9c9b3; margin: 1.6em 0; }
+  strong { color:#1f1b18; }
+  /* tables scroll sideways on small phones instead of squishing */
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: .92rem; display: block; overflow-x: auto; }
+  th { background:#f3ece1; color:#5c5247; text-align:left; padding:7px 10px; border:1px solid #e2d4c0; }
+  td { padding:7px 10px; border:1px solid #ece2d4; vertical-align: top; }
+  tr:nth-child(even) td { background:#faf6f0; }
+  ul { padding-left: 1.2em; }
+  li { margin: .25em 0; }
+  code { background:#f1ece3; padding:1px 5px; border-radius:4px; font-size:.9em; }
+
+  /* ---- profit calculator widget ---- */
+  .calc { background:#fff; border:2px solid var(--sage); border-radius:14px; padding:18px 16px; margin:14px 0 8px; box-shadow:0 2px 10px rgba(0,0,0,.05); }
+  .calc h3 { margin-top:0; color: var(--sage); }
+  .calc label { display:block; font-weight:600; margin:12px 0 4px; font-size:.95rem; }
+  .calc select, .calc input {
+    width:100%; padding:12px; font-size:17px; border:1.5px solid #d9c9b3; border-radius:10px;
+    background:#fffdfa; color:var(--ink); -webkit-appearance:none; appearance:none;
+  }
+  .calc .row { display:flex; gap:12px; flex-wrap:wrap; }
+  .calc .row > div { flex:1 1 140px; }
+  .result { margin-top:18px; padding:16px; border-radius:12px; text-align:center; background:#f7f4ee; }
+  .result .big { font-size:2.2rem; font-weight:800; line-height:1.1; }
+  .result .lbl { font-size:.9rem; text-transform:uppercase; letter-spacing:.04em; color:#7c7268; }
+  .result .verdict { font-size:1.05rem; font-weight:700; margin-top:6px; }
+  .good { background:#eaf2e0; } .good .big, .good .verdict { color:#4f7a2e; }
+  .ok   { background:#fbf3df; } .ok .big, .ok .verdict { color:#b07d18; }
+  .low  { background:#fbe9e3; } .low .big, .low .verdict { color:#b5492e; }
+  .breakdown { margin-top:12px; font-size:.92rem; color:#5c5247; }
+  .breakdown div { display:flex; justify-content:space-between; padding:3px 2px; border-bottom:1px dashed #ece2d4; }
+  .hint { font-size:.85rem; color:#8a8073; margin-top:10px; }
+  .pill { display:inline-block; background:#eef1e6; color:#5c6b39; border-radius:999px; padding:6px 12px; font-weight:700; margin-top:10px; font-size:.95rem; }
+</style>

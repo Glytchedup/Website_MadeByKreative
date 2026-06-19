@@ -3,6 +3,16 @@
 All significant decisions and build steps for the MadeByKreative storefront. Entries note
 where judgment was exercised and why.
 
+## [0.4.6] — Phone-friendly guide + interactive profit calculator
+
+- `docs/kristol-guide.html`: a **single self-contained, mobile-responsive** page (no app/account, works
+  offline) generated from `RECOMMENDATIONS.md` via `scripts/build-guide.sh` (pandoc + a head include
+  for mobile CSS and an after-body include for the widget).
+- Built-in **profit calculator**: pick a banner, type real fabric $/yd + minutes + price, and it shows
+  materials, Etsy fees, "you keep," and **profit per hour** (color-coded) plus the price needed to
+  earn $20/hr. Verified in a 390px viewport: bow 36" → $19/hr (green), mini 48" → $8/hr (flagged).
+- Sources: `scripts/guide-head.html`, `scripts/guide-calculator.html`.
+
 ## [0.4.5] — Reframe strategy around profit-per-hour (time is the constraint)
 
 - Kristol makes everything by hand and won't outsource, so her **time is the real limit**, not demand.
