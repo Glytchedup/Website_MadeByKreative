@@ -51,9 +51,14 @@ below**, so it goes first._
 | Repeat buyers | 5 | 2 |
 
 **Your conversion rate (5.7–7.9%) is excellent** — typical Etsy shops run ~1–3%. That's the single
-most important finding: **when people see your listings, they buy.** So your two real constraints are
-**(a) traffic** and **(b) keeping bestsellers in stock** — *not* the quality of the listings. That
-changes what's worth your time.
+most important finding: **when people see your listings, they buy.** Listings and demand are not the
+problem. The real ceiling is **Kristol's own making time** — every piece is handmade, with no
+outsourcing (a deliberate quality choice). She already **sells out**, so the lever is **not** more
+traffic or more volume (she can't sew more hours); it's **profit per piece and per hour of making**:
+price for the value she's delivering, and steer her limited hours toward the highest-$/hr products.
+See §1 (pricing) and the **profit-per-hour ranking** in `banner-pricing-deep-dive.md`. Traffic
+(Pinterest, SEO) matters only as a way to sell the *higher-value* items and move *slow* stock — not to
+manufacture volume she can't fulfill.
 
 ### Revenue is concentrated in a few seasonal winners
 Top listings year-to-date by revenue:

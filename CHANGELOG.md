@@ -3,6 +3,19 @@
 All significant decisions and build steps for the MadeByKreative storefront. Entries note
 where judgment was exercised and why.
 
+## [0.4.5] — Reframe strategy around profit-per-hour (time is the constraint)
+
+- Kristol makes everything by hand and won't outsource, so her **time is the real limit**, not demand.
+  Reframed the advice from volume/traffic toward **profit per piece and per hour of making**.
+- `scripts/cost-model.ts` now computes **profit-per-hour at the recommended prices** and prints a
+  ranking; `banner-cost-model.csv` gained "Profit/hr now" + "Profit/hr at recommended" columns.
+  Finding: rag garlands & bow garlands are her **best $/hr (~$15–19) AND bestsellers**; mini pennants
+  and the Birthday banner are time-sinks (~$8–11) even after raises.
+- Added "Make your time count" to `RECOMMENDATIONS.md` (what to sew more of, what to make-to-order/
+  simplify/retire, batch-to-save-time, and don't pay for volume you can't fulfill) and a profit-per-
+  hour ranking + strategy to `banner-pricing-deep-dive.md`. Reframed the optimization doc's
+  "constraints" from traffic/stock to making-time/profit-per-hour.
+
 ## [0.4.4] — Fact-check vs live Etsy: shipping, seasonality, fix offer advice
 
 - **Verified shipping against the live shop** (API shipping-profiles + Playwright). Banners charge

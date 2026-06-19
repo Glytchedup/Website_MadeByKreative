@@ -10,8 +10,10 @@ Editable calculators: `etsy-pricing-model.csv`, `banner-cost-model.csv`._
 > roughly *double* the typical Etsy shop — your bestsellers **sell out**, and shoppers have left you
 > 5-star reviews and **386 favorites** this year. That's the hard part of running a handmade shop, and
 > you've already nailed it. Everything below is just **polish on top of something that's clearly
-> working** — small tweaks to help your beautiful work reach more people and earn what it's truly
-> worth. Pick whatever feels easy; none of it is urgent.
+> working** — and the theme is simple: since you make every piece by hand and won't cut corners,
+> let's make sure **each one earns what it's truly worth**, rather than chasing more orders than you
+> can comfortably sew. Quality over quantity, paid properly. Pick whatever feels easy; none of it is
+> urgent.
 
 ## ⭐ The big picture (the good news)
 
@@ -24,8 +26,11 @@ Editable calculators: `etsy-pricing-model.csv`, `banner-cost-model.csv`._
    comparable shops charge, even though yours sell out. That's a great position to be in: it means
    there's comfortable room to **gently raise prices and pay yourself more for work you're already
    doing.** Suggested prices are in the next section.
-3. **Shoppers buy when they find you.** Your listings convert beautifully, so the main opportunity is
-   simply getting in front of *more* people — and keeping your favorites in stock.
+3. **Your time is the real limit — so aim for profit *per piece*, not just more sales.** You make
+   every banner by hand, and that quality is your whole magic — please don't change it. But it also
+   means there are only so many hours in your week. Since you already sell out, the smartest growth
+   isn't squeezing in *more* orders — it's earning **more from each one** (by pricing fairly and
+   spending your sewing time on the pieces that pay best — see "Make your time count" below).
 4. **Pinterest is quietly your best friend.** It brings nearly all your outside-of-Etsy traffic
    (Instagram/Facebook barely register). Leaning into Pinterest is a great, low-effort win.
 5. **Working one season ahead is the real secret.** Your shop lives and dies by the calendar, and
@@ -79,6 +84,39 @@ adjust to whatever feels comfortable.
 > _These come from a real cost build-up (materials + your time + shipping + Etsy fees) cross-checked
 > against competitor prices. The materials/time figures are estimates — if you tell me your real
 > fabric cost and minutes-per-banner, the numbers in `banner-cost-model.csv` recalculate exactly._
+
+---
+
+## ⏳ Make your time count (what's worth sewing)
+
+Because you make everything by hand and keep the quality high, **your time — not customer demand — is
+what limits the shop.** So the goal isn't making *more* (you already sell out); it's making sure
+**every hour at the sewing table earns as much as it can.** Two levers do that: the price raises
+above, and choosing *what* to spend your hours on.
+
+Here's what each piece earns **per hour of your time at the new prices** (after fabric & Etsy fees):
+
+| 💚 Worth your time most | ~$/hr | | 🤔 Time-sinks to rethink | ~$/hr |
+|---|---:|---|---|---:|
+| Bow garland (either size) | ~$19 | | Mini pennant 48" | ~$8 |
+| Small rag garland (3–4 ft) | ~$17–19 | | Birthday bunting | ~$9 |
+| Rag garland 5–6 ft | ~$15–16 | | Mini pennant 72" | ~$11 |
+| Medium / regular pennants | ~$13–14 | | | |
+
+**What this means for where your hours go:**
+- **Lean into rag garlands and bow garlands.** They're your bestsellers *and* your best earners per
+  hour — the happiest combination. When you have making time, make these first. 💚
+- **The little mini pennants and the Birthday banner pay the least for the time they take** (lots of
+  tiny pennants / HTV lettering for not much). You don't have to drop them — just don't pour stock
+  hours into them. Gentle options: make them **"made to order" only**, **simplify** them (fewer,
+  larger pennants), nudge their price up a touch more, or quietly **retire** any that rarely sell.
+- **Save minutes without losing quality** — this is the no-outsourcing way to give yourself a raise:
+  cut fabric in **batches**, **chain-sew** pennants assembly-line style, and make a **production run**
+  of each season's bestseller *before* the rush instead of one at a time. Trimming even 10 minutes off
+  a banner is a real raise.
+- **Don't pay to be busier.** Etsy will nudge you toward ads and sales to chase *more* orders — but
+  when you already sell out, that just means more work at the same (or lower) profit. Your path to
+  more money is **more profit per piece**, not more pieces. 🌵
 
 ---
 

@@ -150,6 +150,34 @@ banners pay $13–19/hr, still modest for skilled handmade work. These are not a
 - Keep one **affordable entry size** per product (the small mini at ~$12, small rag at $15) so
   budget shoppers still convert.
 
+### Where to spend your making hours (profit per hour at the new prices)
+
+Because Kristol's **time is the real constraint** (handmade, no outsourcing), the smartest lens isn't
+"what sells most" but "what pays best **per hour of making**." At the recommended prices, after fabric
+and Etsy fees:
+
+| Rank | Product | Profit / hour | Make-time |
+|---|---|---:|---|
+| 1 | Bow garland (36") | ~$19/hr | 40 min |
+| 1 | Rag garland (3 ft) | ~$19/hr | 25 min |
+| 1 | Bow garland (70") | ~$19/hr | 62 min |
+| 4 | Rag garland (4 ft) | ~$17/hr | 32 min |
+| 5 | Rag garland (5 ft) | ~$16/hr | 42 min |
+| 6 | Rag garland (6 ft) | ~$15/hr | 52 min |
+| 7 | Medium pennant (48"/67") | ~$14/hr | 45–62 min |
+| 9 | Regular pennant (48"/67") | ~$13/hr | 55–75 min |
+| 11 | Mini pennant (72") | ~$11/hr | 70 min |
+| 12 | Birthday pennant (73") | ~$9/hr | 70 min |
+| 13 | Mini pennant (48") | ~$8/hr | 50 min |
+
+**The strategy writes itself:** the **rag garlands and bow garlands** are simultaneously her
+**bestsellers** *and* her **highest profit-per-hour** — so making more of those is the single best use
+of her time. The **mini pennants and Birthday banner** sit at the bottom even after raises; treat them
+as **made-to-order**, simplify them, raise them further, or retire the weakest — don't sink stock-making
+hours into them. And since she sells out, **chasing more traffic/ads adds little** — the lever is
+profit per piece and per hour, not volume. (Time estimates are editable in `scripts/cost-model.ts`;
+the full ranking prints when you run it.)
+
 ---
 
 ## 5. Why the conclusion holds even if my estimates are off
