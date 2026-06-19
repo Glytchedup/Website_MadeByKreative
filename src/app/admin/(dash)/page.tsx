@@ -50,7 +50,7 @@ export default async function AdminDashboard() {
             <code>ETSY_SHARED_SECRET</code> to <code>.env</code> to enable two-way sync.
           </p>
         ) : connected ? (
-          <p className="mt-2 text-sm text-sage">✓ Connected to Etsy. Inventory syncs automatically.</p>
+          <p className="mt-2 text-sm text-pine">✓ Connected to Etsy. Inventory syncs automatically.</p>
         ) : (
           <p className="mt-2 text-sm text-terracotta">
             Keys configured but not authorized yet.{" "}

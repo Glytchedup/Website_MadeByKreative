@@ -11,8 +11,8 @@ import { siteConfig } from "@/lib/config";
 const C = {
   clay: "#B0683F",
   muted: "#5A5247",
-  muted2: "#8A7E6E",
-  muted3: "#9A8C78",
+  muted2: "#6B6358", // darkened for AA on cream (5.6:1)
+  muted3: "#6E665C", // darkened for AA on cream (5.3:1)
   line: "rgba(110,90,60,0.14)",
 };
 const sans = "'Hanken Grotesk', system-ui, sans-serif";

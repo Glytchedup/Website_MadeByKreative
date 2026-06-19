@@ -34,12 +34,24 @@
   }
 }
 
+/* Respect users who ask for reduced motion (vestibular safety): freeze the
+   decorative bunting sway / pulse dot and neutralize any other animations. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 @layer components {
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-soft px-5 py-3 font-semibold transition focus-visible:outline-2;
   }
   .btn-primary {
-    @apply btn bg-terracotta text-cream hover:bg-clay disabled:opacity-50 disabled:cursor-not-allowed;
+    /* text-white (not cream) clears WCAG AA 4.5:1 on terracotta (4.54:1). */
+    @apply btn bg-terracotta text-white hover:bg-clay disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-secondary {
     @apply btn border border-charcoal/20 bg-white text-charcoal hover:bg-linen;

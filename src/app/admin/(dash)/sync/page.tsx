@@ -29,7 +29,7 @@ export default async function SyncDashboard({
     <div>
       <h1 className="text-2xl font-bold">Etsy sync</h1>
 
-      {sp.connected && <p className="mt-3 rounded bg-sage/15 p-3 text-sm text-sage">✓ Etsy connected successfully!</p>}
+      {sp.connected && <p className="mt-3 rounded bg-sage/15 p-3 text-sm text-pine">✓ Etsy connected successfully!</p>}
       {sp.error && <p className="mt-3 rounded bg-terracotta/15 p-3 text-sm text-terracotta">Connection error: {sp.error}</p>}
 
       {/* Connection + controls */}
@@ -41,7 +41,7 @@ export default async function SyncDashboard({
           </p>
         ) : connected ? (
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-sage">✓ Connected to Etsy</p>
+            <p className="text-sm text-pine">✓ Connected to Etsy</p>
             <form action={triggerSync}><button className="btn-primary px-4 py-2 text-sm">Sync now</button></form>
           </div>
         ) : (

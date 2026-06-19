@@ -9,7 +9,8 @@ export function StockBadge({ quantity }: { quantity: number }) {
   }
   if (quantity <= 2) {
     return (
-      <span className="rounded-full bg-terracotta/15 px-2 py-0.5 text-xs font-semibold text-terracotta">
+      // Darker terracotta (#8A3D22) clears WCAG AA on the /15 tint (5.9:1).
+      <span className="rounded-full bg-terracotta/15 px-2 py-0.5 text-xs font-semibold text-[#8A3D22]">
         Only {quantity} left
       </span>
     );

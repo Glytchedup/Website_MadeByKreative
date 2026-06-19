@@ -13,7 +13,7 @@ const C = {
   ink: "#2E2A24",
   clay: "#B0683F",
   muted: "#5A5247",
-  muted3: "#9A8C78",
+  muted3: "#6E665C", // darkened for AA on cream (5.3:1)
   line: "rgba(110,90,60,0.14)",
 };
 const sans = "'Hanken Grotesk', system-ui, sans-serif";

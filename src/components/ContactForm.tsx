@@ -30,7 +30,7 @@ export function ContactForm() {
   }
 
   if (status === "done")
-    return <p className="card p-6 text-sage">Thank you! Your message has been sent. 💛</p>;
+    return <p className="card p-6 text-pine">Thank you! Your message has been sent. 💛</p>;
 
   return (
     <form onSubmit={submit} className="card space-y-4 p-6">

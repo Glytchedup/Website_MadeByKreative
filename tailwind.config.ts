@@ -11,8 +11,9 @@ const config: Config = {
         clay: "#C8745A",
         terracotta: "#B85C38",
         sage: "#8A9A5B",
+        pine: "#4F6147", // AA-passing green for success text (6.3:1 on cream)
         charcoal: "#3A352F",
-        muted: "#7A7268",
+        muted: "#6B6358", // darkened from #7A7268 to clear AA 4.5:1 on cream (5.6:1)
       },
       fontFamily: {
         sans: ["var(--font-body)", "ui-sans-serif", "system-ui", "sans-serif"],

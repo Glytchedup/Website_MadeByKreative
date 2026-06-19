@@ -22,7 +22,7 @@ export function Newsletter() {
     }
   }
 
-  if (status === "done") return <p className="text-sm text-sage">Thanks for subscribing! 💛</p>;
+  if (status === "done") return <p className="text-sm text-pine">Thanks for subscribing! 💛</p>;
 
   return (
     <form onSubmit={submit} className="flex gap-2">

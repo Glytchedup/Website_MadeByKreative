@@ -18,8 +18,8 @@ const C = {
   clay: "#B0683F",
   clayDark: "#99572F",
   muted: "#5A5247",
-  muted2: "#8A7E6E",
-  muted3: "#9A8C78",
+  muted2: "#6B6358", // darkened for AA on cream (5.6:1)
+  muted3: "#6E665C", // darkened for AA on cream (5.3:1)
   line: "rgba(110,90,60,0.14)",
 };
 const serif = "'Newsreader', Georgia, serif";
@@ -43,9 +43,10 @@ function badgeFor(p: CatalogProduct): string {
   return "";
 }
 function badgeStyle(label: string): { bg: string; fg: string } {
-  if (label === "Bestseller") return { bg: "rgba(176,104,63,0.92)", fg: C.cream };
+  // Badge bgs deepened so cream text clears WCAG AA 4.5:1 (was 3.5/4.0:1).
+  if (label === "Bestseller") return { bg: "rgba(140,78,41,0.95)", fg: C.cream };
   if (label === "New") return { bg: "rgba(254,252,248,0.92)", fg: C.ink };
-  if (label === "Sold out") return { bg: "rgba(120,110,98,0.92)", fg: C.cream };
+  if (label === "Sold out") return { bg: "rgba(95,88,77,0.95)", fg: C.cream };
   if (label === "Only 1 left") return { bg: "rgba(155,55,40,0.9)", fg: C.cream };
   return { bg: "rgba(46,42,36,0.86)", fg: C.cream };
 }
@@ -283,7 +284,7 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
             <div style={{ height: 9, width: "min(340px,80%)", marginTop: 14, backgroundImage: "radial-gradient(circle, #C2453F 1.9px, transparent 2.2px)", backgroundSize: "11px 9px", backgroundRepeat: "repeat-x", backgroundPosition: "left center" }} />
             <p style={{ fontSize: "clamp(16px,1.5vw,19px)", lineHeight: 1.65, color: C.muted, maxWidth: "42ch", margin: "22px 0 0" }}>Pennant buntings, shabby rag garlands, and tied-bow banners, raw frayed edges and all, made one stitch at a time to bring a little warmth to your mantle.</p>
             <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap", marginTop: 32 }}>
-              <a href="#shop" style={{ textDecoration: "none", background: C.clay, color: C.cream, padding: "16px 32px", borderRadius: 2, fontSize: 15, fontWeight: 600, letterSpacing: "0.02em", boxShadow: "0 8px 22px rgba(176,104,63,0.26)" }}>Shop the Collection</a>
+              <a href="#shop" style={{ textDecoration: "none", background: C.clayDark, color: C.cream, padding: "16px 32px", borderRadius: 2, fontSize: 15, fontWeight: 600, letterSpacing: "0.02em", boxShadow: "0 8px 22px rgba(176,104,63,0.26)" }}>Shop the Collection</a>
               <a href="#story" style={{ textDecoration: "none", color: C.ink, fontSize: 15, fontWeight: 600, borderBottom: "1.5px solid rgba(110,90,60,0.3)", paddingBottom: 3 }}>Meet the maker &rarr;</a>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 30, color: C.muted2, fontSize: 13.5 }}>
@@ -443,7 +444,7 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
                       const added = addedId === p.id;
                       const buyable = !!v && v.quantity > 0;
                       return (
-                        <button onClick={(e) => addToCart(p, e)} disabled={!buyable} style={{ display: "inline-flex", alignItems: "center", gap: 7, background: added ? "#5E7355" : buyable ? C.clay : "#B8AE9E", color: C.cream, border: "none", borderRadius: 2, padding: "10px 17px", fontFamily: sans, fontSize: 13, fontWeight: 600, letterSpacing: "0.03em", cursor: buyable ? "pointer" : "not-allowed", transition: "background .2s ease", boxShadow: "inset 0 0 0 1.5px rgba(255,255,255,0.22), 0 4px 12px rgba(176,104,63,0.22)" }}><span style={{ fontSize: 13, lineHeight: 1 }}>{added ? "✓" : "✦"}</span> {added ? "Added" : buyable ? "Add" : "Sold out"}</button>
+                        <button onClick={(e) => addToCart(p, e)} disabled={!buyable} style={{ display: "inline-flex", alignItems: "center", gap: 7, background: added ? "#5E7355" : buyable ? C.clayDark : "#B8AE9E", color: C.cream, border: "none", borderRadius: 2, padding: "10px 17px", fontFamily: sans, fontSize: 13, fontWeight: 600, letterSpacing: "0.03em", cursor: buyable ? "pointer" : "not-allowed", transition: "background .2s ease", boxShadow: "inset 0 0 0 1.5px rgba(255,255,255,0.22), 0 4px 12px rgba(176,104,63,0.22)" }}><span style={{ fontSize: 13, lineHeight: 1 }}>{added ? "✓" : "✦"}</span> {added ? "Added" : buyable ? "Add" : "Sold out"}</button>
                       );
                     })()}
                   </div>
@@ -492,7 +493,7 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
               <span style={{ fontSize: 13, color: "#C9BCA8" }}>Estimated</span>
               <span style={{ fontFamily: serif, fontSize: 27, color: C.cream }}>~${cPrice}</span>
             </div>
-            <Link href={customHref} style={{ marginTop: 22, textAlign: "center", textDecoration: "none", background: C.clay, color: C.cream, borderRadius: 2, padding: "14px 20px", fontFamily: sans, fontSize: 15, fontWeight: 600 }}>Request this custom banner &rarr;</Link>
+            <Link href={customHref} style={{ marginTop: 22, textAlign: "center", textDecoration: "none", background: C.clayDark, color: C.cream, borderRadius: 2, padding: "14px 20px", fontFamily: sans, fontSize: 15, fontWeight: 600 }}>Request this custom banner &rarr;</Link>
             <span style={{ fontSize: 12, color: "#9C8F7C", textAlign: "center", marginTop: 9 }}>We&apos;ll confirm fabrics &amp; details by message before I start.</span>
           </div>
         </div>
@@ -506,7 +507,7 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
               <div style={{ aspectRatio: "4/5", borderRadius: 3, overflow: "hidden", boxShadow: "0 24px 50px rgba(60,45,25,0.16)", backgroundColor: "#DCCBB3" }}>
                 <img src="/maker-portrait.jpg" alt="Kristol sewing a shabby rag garland at her Bernina machine, the Gilbert water tower visible through the window" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "62% 50%", display: "block" }} />
               </div>
-              <div style={{ position: "absolute", top: -16, right: -14, background: C.clay, color: C.cream, width: 96, height: 96, borderRadius: "50%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", transform: "rotate(8deg)", boxShadow: "0 12px 26px rgba(176,104,63,0.32)" }}>
+              <div style={{ position: "absolute", top: -16, right: -14, background: C.clayDark, color: C.cream, width: 96, height: 96, borderRadius: "50%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", transform: "rotate(8deg)", boxShadow: "0 12px 26px rgba(176,104,63,0.32)" }}>
                 <span style={{ fontFamily: script, fontSize: 26, lineHeight: 0.95 }}>since</span>
                 <span style={{ fontFamily: serif, fontSize: 24, lineHeight: 1 }}>2020</span>
               </div>
