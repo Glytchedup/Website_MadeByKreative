@@ -1,7 +1,8 @@
 # MadeByKreative — Action Checklist 🌵
 
 _Plain-language to-do list for Kristol. Copy-paste the titles & tags straight into Etsy._
-_Full reasoning & data is in `etsy-optimization.md`; the price calculator is `etsy-pricing-model.csv`._
+_Full reasoning & data: `etsy-optimization.md` (overall) and `banner-pricing-deep-dive.pdf` (pricing).
+Editable calculators: `etsy-pricing-model.csv`, `banner-cost-model.csv`._
 
 ---
 
@@ -9,10 +10,11 @@ _Full reasoning & data is in `etsy-optimization.md`; the price calculator is `et
 
 1. **Your shop sells out of its winners.** Patriotic / 4th-of-July rag garlands are ~70% of your
    yearly sales and sold out again this year. **Make more next year and price the big sizes higher.**
-2. **Your prices are already well-structured** — you charge more for bigger sizes, which is exactly
-   right. Only a few small raises are worth making (below). _(An earlier draft of this file claimed
-   your prices were "flat" — that was a glitch in our data import, now fixed. It also meant your
-   website was accidentally charging the small-size price for every size; that's corrected too.)_
+2. **Your prices are tiered right, but set too low.** You correctly charge more for bigger sizes (and
+   we fixed a website bug that was hiding that). But a full cost breakdown shows your banners pay you
+   only **~$10/hr** on average after materials and fees — as little as **$3/hr** on the Birthday
+   bunting — while the market sells similar items for **2–3× your prices** and yours **sell out.**
+   There's real room to raise; recommended new prices are in the next section.
 3. **Your listings convert great (5.7%+).** The problem isn't your listings — it's **traffic** and
    **running out of stock**. Keep bestsellers in stock and get more eyes on them.
 4. **Pinterest is your best free traffic outside Etsy.** Instagram/Facebook do almost nothing. Pin
@@ -22,32 +24,76 @@ _Full reasoning & data is in `etsy-optimization.md`; the price calculator is `et
 
 ---
 
-## 💲 Pricing — you're mostly already there
+## 💲 Pricing — recommended new prices
 
-**Your sizes are already priced correctly on Etsy** (bigger costs more), so there's no big re-pricing
-job. Only these are worth changing:
+Your **sizes are tiered correctly** (bigger costs more — good). The issue is the overall **level**: a
+full cost breakdown (`banner-pricing-deep-dive.pdf`) shows the banners pay you only **~$10/hr**, and
+the market sells comparable items for far more. These targets pay you a fairer wage while still
+sitting **below** the competition — and even at these prices most banners only earn ~$13–19/hr.
 
-### Worth doing
-| Listing | Change | Why |
+### Banners — change to these prices
+| Banner | Now (by size) | **New (by size)** |
 |---|---|---|
-| **Fabric Wristlet Keychain** (all colors) | **$8 → $12** | At $8 you barely clear costs after Etsy fees; similar handmade ones sell at $11+. This is your one clearly-underpriced item. |
-| **Birthday Bunting — Orange/Confetti** | **$15 → $20** | It's a full 73" regular banner but priced below your *other* regular pennants (which are $20). Optionally add a 48" size at **$16** too. |
-| **Birthday Bunting — Lime/Sprinkles** | **$15 → $20** | Same as above. |
+| Rag garland — Halloween, Fall, Spring | 4ft $15 · 5ft $17.50 · 6ft $20 | **4ft $18 · 5ft $22 · 6ft $26** |
+| St. Patrick's rag garland | 3ft $12 · 4ft $15 · 5ft $17.50 · 6ft $20 | **3ft $15 · 4ft $18 · 5ft $22 · 6ft $26** |
+| Regular pennant — Easter, Valentine, St. Pat's | 48in $16 · 67–68in $20 | **48in $20 · 67–68in $28** |
+| Medium pennant — Christmas, Gingerbread | 48in $14 · 67in $18 | **48in $18 · 67in $24** |
+| Mini pennant — St. Patrick's | 48in $10 · 72in $15 | **48in $12 · 72in $20** |
+| Bow garland — Fall | 36in $20 · 70in $25 | **36in $20 (keep) · 70in $30** |
+| **Birthday bunting** (both, Orange & Lime) | $15 (one size) | **$22** _(optionally add a 48in $16 size)_ |
 
-### Optional small bumps (only if you like)
-| Listing | Size | Change |
+### Accessories
+| Listing | Now | **New** |
 |---|---|---|
-| Fall **Bow** Garland | 70in | $25 → **$30** _(lots of hand-tied bows)_ |
-| Easter / Valentine / St. Pat's regular bunting | 67–68in | $20 → **$22** |
-| Christmas / Gingerbread bunting | 67in | $18 → **$20** |
+| Fabric Wristlet Keychain (all colors) | $8 | **$12** _(barely clears costs at $8; market is $11+)_ |
 
-### Leave these alone — already well-priced ✅
-All your **rag garlands** (Halloween, Fall, Spring, St. Patrick's) are already tiered
-**$15 / $17.50 / $20** by length, and the **mini bunting** is **$10 / $15**. Nothing to change.
+### If you only do three things
+1. **Birthday buntings → $22.** Worst margin in the shop (≈$3/hr) and no market risk at $22.
+2. **Rag garlands up $3–6 per size.** Your bestsellers, and you're far under market — the real money.
+3. **Largest pennants up $6–8** (regular 67" → $28, medium 67" → $24, mini 72" → $20). The big sizes
+   take the most work and currently pay the least.
 
-> _Note: an earlier draft of this list told you to re-price everything and flagged the St. Patrick's
-> rag as "too cheap at $12." That was wrong — it's actually $12/$15/$17.50/$20 like your other
-> garlands. The mistake came from a bug in our website's price import (now fixed)._
+### How to raise prices safely
+- Do it **6–8 weeks before each season** (when demand & search traffic climb) — increases stick
+  better and you're not discounting into a rising market.
+- Change the **largest size first** and watch your conversion rate for a week or two before doing the
+  rest — your Etsy stats will show if it holds (it should; you sell out).
+- Keep one **affordable entry size** per product (small mini ~$12, small rag $18) for budget shoppers.
+
+> _These come from a real cost build-up (materials + your time + shipping + Etsy fees) cross-checked
+> against competitor prices. The materials/time figures are estimates — if you tell me your real
+> fabric cost and minutes-per-banner, the numbers in `banner-cost-model.csv` recalculate exactly._
+
+---
+
+## 🔍 How your prices compare on Etsy
+
+Exact competitor prices change daily and Etsy blocks bulk price-checking, so the **best live
+comparison is to click the links below** — each opens Etsy already searched for that product. Here's
+the snapshot I could verify, with your current and recommended prices beside it:
+
+| Your product | You now | You (recommended) | Typical Etsy range | Examples found |
+|---|---|---|---|---|
+| **Rag garland** (4–6 ft) | $15–20 | $18–26 | ~$25–60+ | _4allseasons_ (Star Seller) **$44–60**; _modernragquilts_ **$52–76** |
+| **Pennant bunting** (large) | $20 | $28 | ~$18 avg; **$25–35** for big double-sided cotton | 2,184 listings, avg ≈ $18 |
+| **Mini bunting** | $10–15 | $12–20 | ~$12–20 | varies widely |
+| **Bow garland** | $20–25 | $20–30 | ~$20–40 | fewer sellers = less competition |
+
+**Even at the recommended prices you'd still sit at or below the middle of the market** — and your rag
+garlands would stay well under the dedicated rag-garland shops.
+
+**Browse live competitors (click to compare):**
+- Rag garlands → <https://www.etsy.com/search?q=fabric+rag+garland>
+- Pennant buntings → <https://www.etsy.com/search?q=fabric+pennant+bunting+banner>
+- Mini buntings → <https://www.etsy.com/search?q=mini+fabric+bunting+banner>
+- Bow garlands → <https://www.etsy.com/search?q=fabric+bow+garland>
+- Halloween rag garlands → <https://www.etsy.com/search?q=halloween+rag+garland>
+- Christmas buntings → <https://www.etsy.com/search?q=christmas+fabric+bunting+banner>
+
+> **Tips for a fair comparison:** sort by **"Top Reviews"** or look for **Star Seller** badges to
+> compare against shops that actually *sell* (not just the cheapest listing), and match like-for-like
+> — same length, double-sided, 100% cotton. Some of the $44–76 rag garlands are denser/quilted than
+> yours, so they're the high end, not an exact match.
 
 ---
 

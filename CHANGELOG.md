@@ -3,6 +3,16 @@
 All significant decisions and build steps for the MadeByKreative storefront. Entries note
 where judgment was exercised and why.
 
+## [0.4.3] — Roll pricing into checklist + competitor comparison
+
+- Folded the banner deep-dive targets into `RECOMMENDATIONS.md` (+ PDF) so Kristol has one
+  consolidated to-do: recommended new prices per banner type/size, "if you only do three things,"
+  and a safe roll-out plan.
+- Added a **"How your prices compare on Etsy"** section: verified comps (rag-garland shops $44–76),
+  typical ranges, and clickable live Etsy search links per product type so she can compare current
+  competitor prices herself (Etsy blocks bulk price scraping, so live browse links are the reliable
+  comparison tool).
+
 ## [0.4.2] — Banner pricing deep dive (bottom-up cost model)
 
 - `docs/banner-pricing-deep-dive.md` (+ PDF) and `docs/banner-cost-model.csv` (from
