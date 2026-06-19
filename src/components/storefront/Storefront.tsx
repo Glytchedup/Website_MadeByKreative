@@ -469,8 +469,8 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
         <div style={{ maxWidth: 1240, margin: "0 auto", padding: "clamp(48px,6vw,84px) 28px" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))", gap: "clamp(36px,5vw,68px)", alignItems: "center" }}>
             <div style={{ position: "relative" }}>
-              <div style={{ aspectRatio: "4/5", borderRadius: 3, overflow: "hidden", boxShadow: "0 24px 50px rgba(60,45,25,0.16)", backgroundColor: "#DCCBB3", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ fontFamily: script, fontSize: 30, color: "#A2937F" }}>Kristol at her machine</span>
+              <div style={{ aspectRatio: "4/5", borderRadius: 3, overflow: "hidden", boxShadow: "0 24px 50px rgba(60,45,25,0.16)", backgroundColor: "#DCCBB3" }}>
+                <img src="/maker-portrait.jpg" alt="Kristol sewing a shabby rag garland at her Bernina machine, the Gilbert water tower visible through the window" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "62% 50%", display: "block" }} />
               </div>
               <div style={{ position: "absolute", top: -16, right: -14, background: C.clay, color: C.cream, width: 96, height: 96, borderRadius: "50%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", transform: "rotate(8deg)", boxShadow: "0 12px 26px rgba(176,104,63,0.32)" }}>
                 <span style={{ fontFamily: script, fontSize: 26, lineHeight: 0.95 }}>since</span>
