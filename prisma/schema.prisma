@@ -14,10 +14,12 @@ generator client {
 }
 
 datasource db {
-  // SQLite for zero-config local dev. For production set DATABASE_URL to Postgres
-  // and change provider to "postgresql" (no code changes required).
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  // Postgres (Neon) for both local dev and production. `url` is the pooled
+  // (pgbouncer) connection used at runtime; `directUrl` is the unpooled
+  // connection used for migrations / `prisma db push`.
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 // ---------------------------------------------------------------------------

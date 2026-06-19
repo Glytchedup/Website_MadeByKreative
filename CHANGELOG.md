@@ -3,6 +3,22 @@
 All significant decisions and build steps for the MadeByKreative storefront. Entries note
 where judgment was exercised and why.
 
+## [0.3.0] — Deploy to Vercel (free) on Neon Postgres
+
+- **Database → Postgres (Neon).** Switched the Prisma provider from sqlite to postgresql
+  (SQLite can't persist on Vercel's serverless filesystem). Added `directUrl` so migrations
+  use the unpooled connection while runtime uses the pooled (pgbouncer) one. Local dev now
+  also uses the same Neon DB.
+- **Decision:** local + prod share one Neon database for this test deploy — simplest, and it
+  means a local sync populates production. Re-ran Etsy OAuth + content sync against Neon
+  (16 products / 41 variants / receipts baselined).
+- **Cron → daily.** Vercel's free (Hobby) plan caps cron at once/day, so the Etsy poll
+  schedule changed from every-3-min to `0 8 * * *`. Real-time protection at checkout is
+  unaffected (the just-in-time oversell guard still runs live); use admin "Sync now" for
+  on-demand syncs, or upgrade/host elsewhere for frequent polling.
+- Stripe stays in **test mode** in production; a production webhook (dashboard → live URL)
+  replaces the local Stripe CLI listener.
+
 ## [0.2.0] — New storefront design (the "shell")
 
 Adopted the provided MadeByKreative design shell as the homepage and wired it to live data.
