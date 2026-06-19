@@ -14,12 +14,12 @@ assumptions and re-run `scripts/cost-model.ts`)._
 
 ## The one-line answer
 
-**Kristol is underpaying herself.** Across the banners, today's prices pay her an average of
-**~$9.79/hr** for her labor (after materials and Etsy fees) — and as little as **$3.23/hr** on the
-Birthday bunting. The market sells comparable items for **2–3× her prices**, and her items **sell out
-at a 5.7% conversion rate** — every signal says there's room to raise. Realistic, market-checked
-targets are in the table at the bottom; the biggest, safest wins are **rag garlands** and the
-**Birthday buntings**.
+**Kristol's work is currently a real bargain — there's happy room to raise prices.** Today's prices
+leave her about **~$9.79/hr** for her time after materials and Etsy fees (and only ~$3.23/hr on the
+Birthday bunting). Since the market sells comparable items for **2–3× her prices** and hers **sell out
+at a 5.7% conversion rate**, every signal says she can comfortably charge more and pay herself better.
+This is good news, not bad. Realistic, market-checked targets are in the table at the bottom; the
+biggest, easiest wins are the **rag garlands** and the **Birthday buntings**.
 
 ---
 
@@ -58,10 +58,10 @@ Built into every recommended price: **6.5% transaction + 3% processing + $0.25 +
 
 ---
 
-## 2. What Kristol earns per hour right now
+## 2. What each banner earns per hour right now
 
-This is the gut-punch. Taking each current price, subtracting materials and Etsy fees, and dividing
-the rest by the estimated labor time:
+This is where the opportunity shows up. Taking each current price, subtracting materials and Etsy
+fees, and dividing the rest by the estimated labor time:
 
 | Banner | Current price | **Earned per hour now** |
 |---|---:|---:|
@@ -80,12 +80,14 @@ the rest by the estimated labor time:
 | Bow garland 36" | $20.00 | **$19.35/hr** ✅ |
 
 **Takeaways:**
-- The **Birthday bunting ($3.23/hr)** is the single worst item — full-size 73" banner + HTV work for $15.
-- **Pennant buntings** (regular/medium/mini) cluster at **$6–9/hr** — the most underpriced *category*.
-- **Rag garlands** pay **$9–12/hr** — modestly low, but they're the bestsellers, so even small raises
-  add up fast.
-- The **bow garland** is the one item priced about right — the 36" already earns ~$19/hr. Good
-  benchmark for what the others *should* feel like.
+- The **Birthday bunting** has the most room — it's a full-size 73" banner with HTV lettering priced
+  at $15, so a raise here is the easiest win of all.
+- **Pennant buntings** (regular/medium/mini) sit around **$6–9/hr** — the category with the most
+  headroom.
+- **Rag garlands** earn **$9–12/hr** — they're already your bestsellers, so even a small, gentle raise
+  adds up beautifully.
+- The **bow garland** is priced just about right — the 36" already earns ~$19/hr. It's a lovely
+  benchmark for where the others can comfortably head.
 
 ---
 
@@ -98,8 +100,8 @@ the rest by the estimated labor time:
 | Mini bunting | $10–15 | $12–20 |
 
 Kristol sits at or **below the bottom** of every band — while running an **excellent 5.7% conversion
-rate** and **selling out** of bestsellers. That combination (low price + high conversion + stockouts)
-is the textbook signal that prices are too low.
+rate** and **selling out** of bestsellers. That combination (great value + high conversion + sell-outs)
+is the textbook sign that customers happily pay more — a green light to raise with confidence.
 
 ---
 
@@ -148,15 +150,16 @@ banners pay $13–19/hr, still modest for skilled handmade work. These are not a
 
 ## 5. Why the conclusion holds even if my estimates are off
 
-The recommendation ("raise, especially rag garlands and Birthday") survives big changes to the
-guesses:
-- **If fabric is cheaper than $10/yd** (scraps/sales) → margins are even thinner per *dollar of
-  price*, so the underpricing case gets *stronger*, not weaker.
-- **If Kristol is faster than estimated** → her hourly wage at current prices is higher, but the
-  *market* comps ($44–76 rag garlands, $25–35 buntings) still sit far above her prices, so the raise
-  is still justified — just framed as "matching the market" rather than "paying fair labor."
-- **Only if she is BOTH much faster AND much cheaper on materials** would current prices be "fine" —
-  and even then, the sell-outs and 5.7% conversion say she's leaving money on the table.
+The takeaway ("there's room to raise, especially rag garlands and Birthday") holds up even if these
+guesses are off:
+- **If fabric is cheaper than $10/yd** (scraps/sales) → the value Kristol is offering is even better,
+  so the case for a raise is *stronger*, not weaker.
+- **If Kristol is faster than estimated** → she's earning a better hourly rate already (wonderful!),
+  but the *market* comps ($44–76 rag garlands, $25–35 buntings) still sit well above her prices, so a
+  raise still makes sense — just as "matching the market" rather than "paying fair labor."
+- **Only if she's BOTH much faster AND much cheaper on materials** would today's prices already be
+  spot-on — and even then, the sell-outs and 5.7% conversion suggest customers would happily pay a
+  little more.
 
 To make this exact, fill your **real** fabric cost and **real** minutes-per-banner into
 `scripts/cost-model.ts` (the `ASSUMPTIONS` block and `ROWS` table) and re-run — the whole table

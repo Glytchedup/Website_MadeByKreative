@@ -1,37 +1,48 @@
 # MadeByKreative — Action Checklist 🌵
 
-_Plain-language to-do list for Kristol. Copy-paste the titles & tags straight into Etsy._
+_A friendly to-do list for Kristol. Copy-paste the titles & tags straight into Etsy._
 _Full reasoning & data: `etsy-optimization.md` (overall) and `banner-pricing-deep-dive.pdf` (pricing).
 Editable calculators: `etsy-pricing-model.csv`, `banner-cost-model.csv`._
 
 ---
 
-## ⭐ Start here — the 5 things that matter most
+> 💛 **First, the big thing: you're doing a wonderful job.** Your shop converts at about **5.7%** —
+> roughly *double* the typical Etsy shop — your bestsellers **sell out**, and shoppers have left you
+> 5-star reviews and **386 favorites** this year. That's the hard part of running a handmade shop, and
+> you've already nailed it. Everything below is just **polish on top of something that's clearly
+> working** — small tweaks to help your beautiful work reach more people and earn what it's truly
+> worth. Pick whatever feels easy; none of it is urgent.
 
-1. **Your shop sells out of its winners.** Patriotic / 4th-of-July rag garlands are ~70% of your
-   yearly sales and sold out again this year. **Make more next year and price the big sizes higher.**
-2. **Your prices are tiered right, but set too low.** You correctly charge more for bigger sizes (and
-   we fixed a website bug that was hiding that). But a full cost breakdown shows your banners pay you
-   only **~$10/hr** on average after materials and fees — as little as **$3/hr** on the Birthday
-   bunting — while the market sells similar items for **2–3× your prices** and yours **sell out.**
-   There's real room to raise; recommended new prices are in the next section.
-3. **Your listings convert great (5.7%+).** The problem isn't your listings — it's **traffic** and
-   **running out of stock**. Keep bestsellers in stock and get more eyes on them.
-4. **Pinterest is your best free traffic outside Etsy.** Instagram/Facebook do almost nothing. Pin
-   more, and link some pins to your own website.
-5. **Turn on Etsy offers for abandoned carts & favorites** — you had 95 abandoned carts (~$1,500) and
-   386 favorites this year. Those are buyers who almost bought.
+## ⭐ The big picture (the good news)
+
+1. **You make things people love — they sell out.** Your patriotic / 4th-of-July rag garlands are
+   ~70% of your year and sell out every season. The opportunity: make a few extra next year so you
+   never have to turn a sale away. 🎆
+2. **Your work may be worth more than you're charging.** You already price bigger sizes higher (smart!
+   — and we fixed a little website glitch that was hiding that). The lovely surprise: when you add up
+   fabric, your time, and Etsy's fees, your banners are a genuine **bargain** — priced *below* what
+   comparable shops charge, even though yours sell out. That's a great position to be in: it means
+   there's comfortable room to **gently raise prices and pay yourself more for work you're already
+   doing.** Suggested prices are in the next section.
+3. **Shoppers buy when they find you.** Your listings convert beautifully, so the main opportunity is
+   simply getting in front of *more* people — and keeping your favorites in stock.
+4. **Pinterest is quietly your best friend.** It brings nearly all your outside-of-Etsy traffic
+   (Instagram/Facebook barely register). Leaning into Pinterest is a great, low-effort win.
+5. **A few warm leads are slipping away.** You had 95 shoppers add items and not finish, plus 386
+   favorites — Etsy's automatic "abandoned cart" and "favorited item" offers can gently win some back.
 
 ---
 
-## 💲 Pricing — recommended new prices
+## 💲 Pricing — a friendly raise (you've earned it)
 
-Your **sizes are tiered correctly** (bigger costs more — good). The issue is the overall **level**: a
-full cost breakdown (`banner-pricing-deep-dive.pdf`) shows the banners pay you only **~$10/hr**, and
-the market sells comparable items for far more. These targets pay you a fairer wage while still
-sitting **below** the competition — and even at these prices most banners only earn ~$13–19/hr.
+Here's the happy part: **your work is worth more than you're charging.** Your sizes are already priced
+just right relative to each other — the only opportunity is to nudge the overall prices up toward what
+comparable shops get, while *still* being a great deal for your customers. These suggested prices give
+your time the credit it deserves, and even at these numbers you'd remain **at or below most
+competitors** (full breakdown in `banner-pricing-deep-dive.pdf`). Take them as a starting point and
+adjust to whatever feels comfortable.
 
-### Banners — change to these prices
+### Banners — suggested prices
 | Banner | Now (by size) | **New (by size)** |
 |---|---|---|
 | Rag garland — Halloween, Fall, Spring | 4ft $15 · 5ft $17.50 · 6ft $20 | **4ft $18 · 5ft $22 · 6ft $26** |
@@ -45,20 +56,23 @@ sitting **below** the competition — and even at these prices most banners only
 ### Accessories
 | Listing | Now | **New** |
 |---|---|---|
-| Fabric Wristlet Keychain (all colors) | $8 | **$12** _(barely clears costs at $8; market is $11+)_ |
+| Fabric Wristlet Keychain (all colors) | $8 | **$12** _(it's a real steal at $8 — $12 is still very fair, and similar ones go for $11+)_ |
 
-### If you only do three things
-1. **Birthday buntings → $22.** Worst margin in the shop (≈$3/hr) and no market risk at $22.
-2. **Rag garlands up $3–6 per size.** Your bestsellers, and you're far under market — the real money.
-3. **Largest pennants up $6–8** (regular 67" → $28, medium 67" → $24, mini 72" → $20). The big sizes
-   take the most work and currently pay the least.
+### If you only change three things
+1. **Birthday buntings → $22.** These are a full-size 73" banner currently priced like a small one —
+   so this is the easiest, no-risk win on the list. 🎈
+2. **Rag garlands up a few dollars per size.** They're your bestsellers *and* a bargain next to the
+   competition — so this is where a small raise adds up the most.
+3. **Give the largest pennants a few more dollars** (regular 67" → $28, medium 67" → $24, mini 72" →
+   $20). The big sizes are the most work, so they've more than earned it.
 
-### How to raise prices safely
-- Do it **6–8 weeks before each season** (when demand & search traffic climb) — increases stick
-  better and you're not discounting into a rising market.
-- Change the **largest size first** and watch your conversion rate for a week or two before doing the
-  rest — your Etsy stats will show if it holds (it should; you sell out).
-- Keep one **affordable entry size** per product (small mini ~$12, small rag $18) for budget shoppers.
+### An easy, low-stress way to do it
+- Raise **6–8 weeks before each season** (when shoppers are already searching) — increases feel
+  natural then, and you're riding rising demand rather than discounting into it.
+- Try the **largest size first** and peek at your conversion rate for a week or two — your Etsy stats
+  will show you it's holding (and it should; your items sell out). Then do the rest with confidence.
+- Keep one **budget-friendly size** per product (small mini ~$12, small rag $18) so price-conscious
+  shoppers still have a way in.
 
 > _These come from a real cost build-up (materials + your time + shipping + Etsy fees) cross-checked
 > against competitor prices. The materials/time figures are estimates — if you tell me your real
@@ -66,11 +80,13 @@ sitting **below** the competition — and even at these prices most banners only
 
 ---
 
-## 🔍 How your prices compare on Etsy
+## 🔍 How your prices compare (you're a great deal!)
 
-Exact competitor prices change daily and Etsy blocks bulk price-checking, so the **best live
-comparison is to click the links below** — each opens Etsy already searched for that product. Here's
-the snapshot I could verify, with your current and recommended prices beside it:
+The nicest way to see this: your prices are **lower than most shops selling similar things** — so
+raising them a little still leaves you very competitive. Exact competitor prices change daily and Etsy
+blocks bulk price-checking, so the **best live comparison is to click the links below** (each opens
+Etsy already searched for that product). Here's the snapshot I could verify, with your current and
+suggested prices beside it:
 
 | Your product | You now | You (recommended) | Typical Etsy range | Examples found |
 |---|---|---|---|---|
@@ -79,8 +95,9 @@ the snapshot I could verify, with your current and recommended prices beside it:
 | **Mini bunting** | $10–15 | $12–20 | ~$12–20 | varies widely |
 | **Bow garland** | $20–25 | $20–30 | ~$20–40 | fewer sellers = less competition |
 
-**Even at the recommended prices you'd still sit at or below the middle of the market** — and your rag
-garlands would stay well under the dedicated rag-garland shops.
+**Even at the suggested prices you'd still sit at or below the middle of the market** — and your rag
+garlands would stay comfortably under the dedicated rag-garland shops. In other words: there's plenty
+of headroom, and your customers are getting lovely handmade work at a friendly price either way. 💛
 
 **Browse live competitors (click to compare):**
 - Rag garlands → <https://www.etsy.com/search?q=fabric+rag+garland>
@@ -169,18 +186,19 @@ important keywords first, because that's what shoppers and Etsy's search see.
 
 ---
 
-## 📸 Other Etsy to-dos
+## 📸 Easy wins (whenever you have a spare moment — no rush)
 
-- [ ] **Add more photos.** Several listings have only 3 (Etsy allows 10). Add: a banner hung on a
-      real mantel, a fabric close-up, and a "pick your size" graphic. More photos = more sales.
-- [ ] **Add a short video** if you can (even 5 sec of the bunting swaying) — it boosts ranking.
-- [ ] **Put every item in a section.** The Keychain, Christmas Bunting, and Gingerbread Bunting have
-      no section. Make a **Christmas/Winter** section and an **Accessories/Gifts** section.
-      _(Sections automatically become categories on your website too.)_
-- [ ] **Restock the out-of-stock size** on the St. Patrick's Regular Bunting (48in).
-- [ ] **Turn on Etsy offers:** abandoned-cart offer + "thank you for favoriting" offer.
-- [ ] **Free shipping?** Etsy gives a search boost for free US shipping — consider building shipping
-      into the prices above and switching listings to free shipping.
+- [ ] **A few more photos** where a listing has only 3 (Etsy allows up to 10). A banner hung on a real
+      mantel, a fabric close-up, and a "pick your size" graphic tend to help shoppers say yes.
+- [ ] **A short clip** if it's ever easy (even 5 sec of the bunting swaying) — Etsy loves video.
+- [ ] **Pop every item into a section.** The Keychain, Christmas Bunting, and Gingerbread Bunting
+      aren't in one yet — a **Christmas/Winter** section and an **Accessories/Gifts** section would
+      tidy things up. _(Sections become categories on your website automatically, too.)_
+- [ ] **Restock when you can:** the 48in St. Patrick's Regular Bunting is currently sold out.
+- [ ] **Flip on Etsy's offers:** the abandoned-cart and "thank you for favoriting" ones run
+      themselves and gently bring shoppers back.
+- [ ] **Maybe free shipping?** Etsy nudges free-US-shipping listings up in search — worth considering
+      down the road (you'd build the shipping into the price).
 
 ## 🗓️ When to do it (seasonal calendar)
 
