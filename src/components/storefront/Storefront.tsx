@@ -110,16 +110,16 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
 
   // ---- derived view data ----
   const bunting = useMemo(() => {
-    const n = 18;
+    const n = 11;
     return Array.from({ length: n }, (_, i) => {
       const t = i / (n - 1);
-      const yvb = 14 + 40 * (1 - Math.pow(2 * t - 1, 2));
+      const yvb = 12 + 24 * (1 - Math.pow(2 * t - 1, 2));
       return {
         color: BUNT_COLORS[i % BUNT_COLORS.length],
-        delay: `-${(i * 0.16).toFixed(2)}s`,
-        x: `${(2 + t * 96).toFixed(2)}%`,
+        delay: `-${(i * 0.18).toFixed(2)}s`,
+        x: `${(12 + t * 76).toFixed(2)}%`,
         y: `${yvb.toFixed(1)}px`,
-        rot: `${((2 * t - 1) * 14).toFixed(1)}deg`,
+        rot: `${((2 * t - 1) * 10).toFixed(1)}deg`,
       };
     });
   }, []);
@@ -211,14 +211,14 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
       </header>
 
       {/* HERO */}
-      <section id="top" style={{ maxWidth: 1240, margin: "0 auto", padding: "30px 28px 36px" }}>
-        <div style={{ position: "relative", height: 96, margin: "0 -28px 18px" }}>
-          <svg viewBox="0 0 1000 80" preserveAspectRatio="none" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: 80 }}>
-            <path d="M20 14 Q500 94 980 14" fill="none" stroke="rgba(110,90,60,0.42)" strokeWidth={2} strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+      <section id="top" style={{ maxWidth: 1240, margin: "0 auto", padding: "22px 28px 36px" }}>
+        <div style={{ position: "relative", height: 72, margin: "0 -28px 10px" }}>
+          <svg viewBox="0 0 1000 72" preserveAspectRatio="none" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: 72 }}>
+            <path d="M120 12 Q500 60 880 12" fill="none" stroke="rgba(110,90,60,0.3)" strokeWidth={1.5} strokeLinecap="round" vectorEffect="non-scaling-stroke" />
           </svg>
           {bunting.map((b, i) => (
-            <span key={i} style={{ position: "absolute", left: b.x, top: b.y, marginLeft: -13, transform: `rotate(${b.rot})`, transformOrigin: "top center" }}>
-              <span style={{ display: "block", width: 26, height: 32, background: b.color, clipPath: "polygon(0 0, 100% 0, 50% 100%)", transformOrigin: "top center", animation: "mbkSway 3.6s ease-in-out infinite", animationDelay: b.delay, boxShadow: "inset 0 3px 0 rgba(255,255,255,0.28), inset 0 0 0 1px rgba(70,55,35,0.06)" }} />
+            <span key={i} style={{ position: "absolute", left: b.x, top: b.y, marginLeft: -9, transform: `rotate(${b.rot})`, transformOrigin: "top center" }}>
+              <span style={{ display: "block", width: 18, height: 22, background: b.color, clipPath: "polygon(0 0, 100% 0, 50% 100%)", transformOrigin: "top center", animation: "mbkSway 3.6s ease-in-out infinite", animationDelay: b.delay, boxShadow: "inset 0 3px 0 rgba(255,255,255,0.28), inset 0 0 0 1px rgba(70,55,35,0.06)" }} />
             </span>
           ))}
         </div>
