@@ -28,8 +28,10 @@ Editable calculators: `etsy-pricing-model.csv`, `banner-cost-model.csv`._
    simply getting in front of *more* people — and keeping your favorites in stock.
 4. **Pinterest is quietly your best friend.** It brings nearly all your outside-of-Etsy traffic
    (Instagram/Facebook barely register). Leaning into Pinterest is a great, low-effort win.
-5. **A few warm leads are slipping away.** You had 95 shoppers add items and not finish, plus 386
-   favorites — Etsy's automatic "abandoned cart" and "favorited item" offers can gently win some back.
+5. **Working one season ahead is the real secret.** Your shop lives and dies by the calendar, and
+   shoppers buy decor a month or two *before* each holiday. Right now (June) the season to get ready
+   for is **Fall / Halloween** — see the calendar near the bottom. Everything else can happily wait
+   its turn.
 
 ---
 
@@ -176,7 +178,7 @@ important keywords first, because that's what shoppers and Etsy's search see.
 **Title:** Gingerbread Christmas Bunting Banner, Fabric Pennant Garland, Handmade Holiday Mantel Decor, Candy Cane
 **Tags:** christmas bunting, gingerbread decor, christmas garland, fabric pennant, holiday decor, christmas banner, christmas mantel, mantel decor, fabric bunting, candy cane decor, holiday garland, christmas party, fireplace decor
 
-### 15. St. Patrick's Day Bunting Banner (Regular)  _(one size is out of stock — restock it)_
+### 15. St. Patrick's Day Bunting Banner (Regular)  _(the 48" size is sold out — no rush; just remake it when you prep for St. Pat's in Jan–Feb)_
 **Title:** St Patricks Day Bunting Banner, Shamrock Fabric Pennant Garland, Handmade Green Mantel Decor, Irish
 **Tags:** st patricks day, shamrock garland, fabric pennant, st patricks decor, irish decor, green garland, st patricks banner, mantel decor, fabric bunting, shamrock bunting, spring decor, party garland, fabric banner
 
@@ -194,21 +196,45 @@ important keywords first, because that's what shoppers and Etsy's search see.
 - [ ] **Pop every item into a section.** The Keychain, Christmas Bunting, and Gingerbread Bunting
       aren't in one yet — a **Christmas/Winter** section and an **Accessories/Gifts** section would
       tidy things up. _(Sections become categories on your website automatically, too.)_
-- [ ] **Restock when you can:** the 48in St. Patrick's Regular Bunting is currently sold out.
-- [ ] **Flip on Etsy's offers:** the abandoned-cart and "thank you for favoriting" ones run
-      themselves and gently bring shoppers back.
-- [ ] **Maybe free shipping?** Etsy nudges free-US-shipping listings up in search — worth considering
-      down the road (you'd build the shipping into the price).
 
-## 🗓️ When to do it (seasonal calendar)
+> **One thing to skip for now:** Etsy will suggest you turn on "abandoned cart" and "sale" offers.
+> Those are discounts — and your most popular pieces already **sell out**, so there's no reason to
+> discount them. As a newer seller, your energy is better spent **making more of what sells** and
+> **getting ready for the next season** than on running sales. (If a *slow* listing ever needs a
+> nudge down the road, that's the time for a small offer — never on your hot sellers.)
 
-| Season | Get listings ready & raise prices | Notes |
+## ✅ A quick shipping fact-check (you asked!)
+
+I checked your live Etsy shop, and here's the real picture:
+
+- **Banners ship at $4.99** (mini banners $3.99), **+$1 for each extra one**. Only the **keychain is
+  free shipping**. So your banners are **not** free shipping — the buyer pays it.
+- A light fabric garland actually costs roughly **$5–6** to mail (USPS Ground Advantage via Etsy's
+  discounted labels). So **$4.99 just about breaks even on one banner**, but you may lose a little on
+  far-away or multi-item orders (that **+$1 for a second banner** is too low — a second one adds real
+  postage).
+
+**What to do (simple version):** next time you mail a few orders, glance at what Etsy actually charges
+you for the label vs. the $4.99 you collected. If you're regularly coming up short, bump the banner
+shipping to **$5.49–5.99** and the "each additional" to **$2–3**. That's an easier fix than free
+shipping — and it goes straight to your bottom line.
+
+_(Free shipping is a nice-to-have later: Etsy gives free-US-shipping listings a small search boost,
+but you'd have to bake ~$5–6 into every price to avoid losing money — so only consider it once the
+price increases above are in place.)_
+
+## 🗓️ When to do it (seasonal calendar) — **you are here: June** 📍
+
+Decor shoppers buy **4–8 weeks before** a holiday, so always prep one season ahead. Right now your
+focus is **Fall / Halloween**; everything else can wait for its window.
+
+| Season | Get ready (list, photos, price nudge) | Where it falls now |
 |---|---|---|
-| **Fall / Halloween** | **Aug – Sep** | You already have these — just update price + title/tags now |
-| **Christmas / Holiday** | **Oct – Nov** | Add the two Christmas buntings to a section |
-| **Valentine's** | **late Dec – Jan** | |
-| **St. Patrick's / Spring / Easter** | **Feb – Mar** | |
-| **Patriotic / 4th of July** ⭐ | **Apr – May** | Your #1 earner — **make extra stock**, price big sizes higher |
+| **Fall / Halloween** | **now → August** | 👉 **Do this next** — you already have these listings |
+| **Christmas / Holiday** | **Sept – Oct** | coming up after; add them to a Christmas section |
+| **Valentine's** | **Dec – Jan** | later |
+| **St. Patrick's / Spring / Easter** | **Jan – Feb** | later _(so restock the sold-out St. Pat's size then, not now)_ |
+| **Patriotic / 4th of July** ⭐ | **April – May** | **just finished & sold out** — the lesson is to **make extra next spring**; nothing to do right now |
 
 ---
 
@@ -218,6 +244,10 @@ Already done for you (no action needed): fixed the garbled apostrophes ("St. Pat
 search-friendly titles/descriptions for Google on all 16 products.
 
 Worth doing when ready:
-- [ ] Set your **real shipping rate** in the admin Settings (it's a $5.50 placeholder now).
-- [ ] Put a **card in every Etsy package** with your website link + a discount code — moving repeat
-      buyers to your own site means you keep more of each sale.
+- [ ] **Check the website shipping rate.** It's set to a flat **$5.50** right now, which actually
+      covers postage a bit better than your $4.99 Etsy rate — so it's fine to leave. Just make it
+      match whatever you settle on for Etsy so customers see the same thing in both places.
+- [ ] Put a **card in every Etsy package** with your website link (and maybe a small thank-you code) —
+      gently inviting happy customers to your own site, where Etsy's fees don't apply, means you keep
+      more of each future sale. This is the friendly, no-discount-on-hot-items way to build repeat
+      buyers.

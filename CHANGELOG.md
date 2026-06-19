@@ -3,6 +3,23 @@
 All significant decisions and build steps for the MadeByKreative storefront. Entries note
 where judgment was exercised and why.
 
+## [0.4.4] — Fact-check vs live Etsy: shipping, seasonality, fix offer advice
+
+- **Verified shipping against the live shop** (API shipping-profiles + Playwright). Banners charge
+  **$4.99** (mini $3.99, +$1/additional); **only the keychain is free shipping** — banners are NOT
+  free. Postage ≈ $5–6, so $4.99 ~break-even (slightly under on far/multi-item). Added a "shipping
+  fact-check" to `RECOMMENDATIONS.md` and corrected the deep-dive + optimization docs (which had
+  wrongly assumed free shipping / $5.50). Verified processing time = **1 day**.
+- **Seasonality:** advice is now date-aware (June 2026 → prep **Fall/Halloween**; don't restock
+  St. Patrick's until Jan–Feb; patriotic just sold out → make extra *next spring*). Calendar marked
+  "you are here." Removed the "restock St. Pat's now" to-do.
+- **Fixed counterintuitive offer advice:** dropped the "turn on abandoned-cart / favorited-item
+  offers" recommendation — they're discounts, pointless on items that already sell out. Reframed
+  toward supply + email list, scoped offers to genuinely slow listings only. Kept everything
+  novice-appropriate.
+- client.ts: added `getShopShippingProfiles` / `getListingRaw`; `scripts/etsy-shipping-check.ts`.
+  `npx tsc --noEmit` passes.
+
 ## [0.4.3] — Roll pricing into checklist + competitor comparison
 
 - Folded the banner deep-dive targets into `RECOMMENDATIONS.md` (+ PDF) so Kristol has one

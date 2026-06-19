@@ -195,6 +195,16 @@ export async function getListing(listingId: number | string) {
   return etsyJson<EtsyListing>(`/listings/${listingId}?includes=Images,Inventory`);
 }
 
+/** Shop shipping profiles — to see real postage cost / free-shipping setup. */
+export async function getShopShippingProfiles() {
+  return etsyJson<any>(`/shops/${shopId()}/shipping-profiles`);
+}
+
+/** Raw listing fetch with arbitrary includes (diagnostics, e.g. Shipping). */
+export async function getListingRaw(listingId: number | string, includes = "Shipping") {
+  return etsyJson<any>(`/listings/${listingId}?includes=${includes}`);
+}
+
 export async function getListingImages(listingId: number | string) {
   return etsyJson<{ results: { url_fullxfull: string; rank: number }[] }>(
     `/listings/${listingId}/images`

@@ -47,10 +47,14 @@ Estimated **batched** minutes per banner (cutting several at once, chain-sewing)
 correcting** — it drives everything.
 
 ### Shipping — handled separately (not in the item price)
-A fabric garland is light (~3–6 oz). **USPS Ground Advantage 2026** is ~$5.90 (4 oz, near) rising to
-~$7–9 for heavier/farther zones. Kristol already charges **$5.50** shipping on the site, which
-roughly covers postage — so shipping is ~break-even and is **excluded from the item prices below.**
-(If she switches to Etsy "free shipping," add ~$6 to every price to keep the same take-home.)
+_Verified on the live Etsy shop (June 2026):_ banners charge **$4.99** shipping (mini banners
+**$3.99**), **+$1 per additional item**; the **keychain ships free**. A light fabric garland costs
+roughly **$5–6** to mail via USPS Ground Advantage (Etsy's discounted labels), so **$4.99 is about
+break-even on a single banner** — slightly under on far zones and multi-item orders (the +$1
+additional-item rate is too low). Because shipping roughly covers itself, it's **excluded from the
+item prices below** (they're item-only). Two small fixes worth making: nudge banner shipping to
+**$5.49–5.99** and the additional-item rate to **$2–3**. (True "free shipping" would mean baking
+~$5–6 into every price — only worth it after the price increases below are in place.)
 
 ### Etsy fees
 Built into every recommended price: **6.5% transaction + 3% processing + $0.25 + $0.20 listing ≈

@@ -89,8 +89,10 @@ title/tag polish applied.
 - **Only 21% is traffic you drove** — and within that, **Pinterest is basically your entire social
   channel** (58 of 60 social visits this year; Instagram/Facebook ≈ 1 each). **Pinterest works for
   you; Instagram/Facebook don't (yet).** Lean into Pinterest, and point some of it at your own site.
-- **95 abandoned carts (~$1,514) and 386 favorites this year** are warm leads going cold. Turn on
-  Etsy's **abandoned-cart** and **favorited-item** offers, and use the new site's email capture.
+- **95 abandoned carts (~$1,514) and 386 favorites this year** are warm leads. _Caveat:_ Etsy's
+  abandoned-cart / favorited-item "offers" are **discounts**, which make little sense on items that
+  already **sell out** — don't discount the hot sellers. The durable lever here is **supply** (make
+  more of what sells) plus the **site email list**; reserve any offer for genuinely slow listings.
 
 ### Re-prioritized action plan (do these in order)
 1. **Restock & relist the patriotic bestsellers for next season** (peak is May–early July) — make
@@ -101,7 +103,8 @@ title/tag polish applied.
    garlands in the catalog — they just need the §1 pricing and §2 titles/tags before the rush.
 3. **Keep winners in stock.** Don't let the hero items sell out mid-season; that's pure lost revenue
    at a 5.7%+ conversion rate.
-4. **Recover warm leads:** enable Etsy abandoned-cart + favorited-item offers; grow the site email list.
+4. **Grow the site email list** (and add a website card to Etsy packages) — the right way to recover
+   repeat business *without* discounting items that already sell out. Skip blanket Etsy sale-offers.
 5. **Double down on Pinterest** (your one working external channel) and route some pins to your own
    site, where you keep ~$1–3 more per order.
 6. **Then** apply the listing/pricing polish in §1–§3 — valuable, but secondary to having the right
@@ -112,7 +115,8 @@ title/tag polish applied.
 ## 1. Pricing & margin audit
 
 ### How Etsy fees eat each sale (US, estimate)
-For an item priced **P** sold with free shipping (shipping cost baked into price):
+For an item priced **P** (Etsy's 6.5% transaction fee also applies to the shipping the buyer pays;
+this simplified view shows the item-price portion):
 
 | Fee | Amount |
 |---|---|
@@ -170,12 +174,16 @@ suggested change — most optional:
 per-variant numbers (now with correct current prices) are in **`etsy-pricing-model.csv`**.
 
 ### Other pricing notes
-- **Free shipping nudges ranking.** Etsy gives a search boost to items in shops offering free US
-  shipping (or the $35+ free-shipping guarantee). Consider building shipping into the prices above
-  and switching listings to free shipping. (Your own site keeps the explicit $5.50 — fine there.)
-- **Seasonal timing.** Push price increases on a category **~6–8 weeks before its season** (raise
-  Halloween/Fall pricing in Aug, Christmas in Oct, Valentine's in late Dec) when demand and search
-  traffic peak — increases stick better and you're not discounting into a rising market.
+- **Shipping (verified June 2026):** banners charge **$4.99** (mini **$3.99**), **+$1/additional**;
+  keychain is free. Actual postage is ~$5–6 via Etsy labels, so $4.99 is ~break-even on a single
+  banner and slightly under on far/multi-item orders — bump banner shipping to **$5.49–5.99** and the
+  additional-item rate to **$2–3**. Full free shipping (search-boost) means baking ~$5–6 into every
+  price; only worth it after the increases above. (Site placeholder is $5.50 flat — match whatever
+  Etsy settles on.)
+- **Seasonal timing.** Make price changes (and seasonal relists) **~6–8 weeks before each season**,
+  when demand and search traffic climb — increases stick better and you're not discounting into a
+  rising market. **As of June, the next window is Fall/Halloween.** Don't relist/restock off-season
+  items (e.g. St. Patrick's) until their prep window (Jan–Feb).
 
 ---
 
@@ -251,7 +259,7 @@ Etsy SEO rules applied below (per current best-practice guidance — sources at 
 - **Title:** `Gingerbread Christmas Bunting Banner, Fabric Pennant Garland, Handmade Holiday Mantel Decor, Candy Cane`
 - **Tags:** christmas bunting · gingerbread decor · christmas garland · fabric pennant · holiday decor · christmas banner · christmas mantel · mantel decor · fabric bunting · candy cane decor · holiday garland · christmas party · fireplace decor
 
-**15. St. Patrick's Day Bunting Banner (Regular)** _(one variant is out of stock — restock or hide)_
+**15. St. Patrick's Day Bunting Banner (Regular)** _(48" variant sold out — remake when prepping St. Pat's in Jan–Feb, not now)_
 - **Title:** `St Patricks Day Bunting Banner, Shamrock Fabric Pennant Garland, Handmade Green Mantel Decor, Irish`
 - **Tags:** st patricks day · shamrock garland · fabric pennant · st patricks decor · irish decor · green garland · st patricks banner · mantel decor · fabric bunting · shamrock bunting · spring decor · party garland · fabric banner
 
@@ -290,16 +298,12 @@ Etsy SEO rules applied below (per current best-practice guidance — sources at 
 
 These are code/content fixes for madebykreative.vercel.app, separate from Etsy:
 
-1. **Decode HTML entities** in product titles/descriptions. The Etsy API returns HTML-encoded text
-   (`&#39;`, `&amp;`), and it's being stored/shown raw — "St. Patrick&#39;s" appears literally on the
-   site. Fix once in the sync/import layer (`src/lib/etsy/sync.ts`) by HTML-decoding title and
-   description on import, so the storefront and SEO tags read cleanly. _(I can do this for you.)_
-2. **Populate `seoTitle` / `seoDescription`.** Every product has these as `null`, so the site falls
-   back to defaults. Generate them from the optimized titles above for better Google ranking on your
-   own domain. _(Scriptable — I can backfill all 16.)_
-3. **Set real shipping & turnaround.** Shipping is still the placeholder **$5.50 flat** and
-   turnaround is the assumed "1–3 business days" — confirm and set the real values in admin →
-   Settings.
+1. ✅ **Decode HTML entities** in titles/descriptions — DONE (`src/lib/html.ts` + sync; "St.
+   Patrick&#39;s" → "St. Patrick's").
+2. ✅ **Populate `seoTitle` / `seoDescription`** — DONE (backfilled all 16).
+3. **Shipping & turnaround.** Site shipping is a **$5.50 flat** placeholder; Etsy charges $4.99/$3.99
+   (verified). Set the site to match whatever you settle on. Turnaround on Etsy is **1 day** (verified)
+   — update the site's assumed "1–3 business days" to match in admin → Settings.
 
 ---
 
