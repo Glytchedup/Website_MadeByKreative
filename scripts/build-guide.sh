@@ -11,4 +11,6 @@ pandoc docs/RECOMMENDATIONS.md -f gfm-tex_math_dollars -t html -s \
   -A scripts/guide-calculator.html \
   --metadata title="MadeByKreative — Your Shop Guide" \
   -o docs/kristol-guide.html
-echo "Wrote docs/kristol-guide.html ($(wc -c < docs/kristol-guide.html) bytes)"
+# Also publish a copy served by the site at /guide.html (Vercel serves public/).
+cp docs/kristol-guide.html public/guide.html
+echo "Wrote docs/kristol-guide.html + public/guide.html ($(wc -c < docs/kristol-guide.html) bytes)"
