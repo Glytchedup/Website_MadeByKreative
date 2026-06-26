@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runFullSync } from "@/lib/etsy/sync";
+import { sweepAbandonedOrders } from "@/lib/orders";
 import { isAuthenticated } from "@/lib/auth";
 
 export const runtime = "nodejs";
@@ -21,8 +22,12 @@ async function authorized(req: NextRequest): Promise<boolean> {
 
 async function handle(req: NextRequest) {
   if (!(await authorized(req))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Release abandoned checkouts FIRST, and unconditionally — a stale pending
+  // order locks site (and Etsy) stock whether or not Etsy is connected, so this
+  // must not be skipped by the Etsy-not-connected early return in runFullSync.
+  const sweep = await sweepAbandonedOrders().catch((e) => ({ released: 0, error: String(e) }));
   const result = await runFullSync();
-  return NextResponse.json({ ranAt: new Date().toISOString(), ...result });
+  return NextResponse.json({ ranAt: new Date().toISOString(), sweep, ...result });
 }
 
 export const GET = handle;

@@ -64,7 +64,13 @@ export default function CartPage() {
                     min={1}
                     max={i.maxQty}
                     value={i.quantity}
-                    onChange={(e) => setQty(i.variantId, Number(e.target.value))}
+                    onChange={(e) => {
+                      // Ignore empty/invalid input so clearing the field to retype
+                      // doesn't snap to 0 (and can't remove the item).
+                      const n = Number(e.target.value);
+                      if (Number.isInteger(n) && n >= 1) setQty(i.variantId, n);
+                    }}
+                    aria-label={`Quantity for ${i.title}`}
                     className="w-16 rounded border border-charcoal/20 px-2 py-1"
                   />
                   <button onClick={() => remove(i.variantId)} className="text-sm text-muted underline hover:text-terracotta">Remove</button>

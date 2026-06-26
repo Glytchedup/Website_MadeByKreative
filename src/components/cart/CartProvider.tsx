@@ -63,10 +63,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const setQty = useCallback((variantId: string, quantity: number) => {
+    // Clamp to [1, maxQty]; never auto-remove on 0/blank/NaN — removal is only
+    // via the explicit Remove button, so clearing the input can't silently drop
+    // the line item.
+    const next = Math.min(Math.max(Math.floor(quantity) || 1, 1), Infinity);
     setItems((prev) =>
-      prev
-        .map((i) => (i.variantId === variantId ? { ...i, quantity: Math.min(Math.max(quantity, 0), i.maxQty) } : i))
-        .filter((i) => i.quantity > 0)
+      prev.map((i) =>
+        i.variantId === variantId ? { ...i, quantity: Math.min(next, i.maxQty) } : i
+      )
     );
   }, []);
 

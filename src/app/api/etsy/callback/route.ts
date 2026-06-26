@@ -20,7 +20,15 @@ export async function GET(req: NextRequest) {
   const verifier = jar.get("etsy_pkce")?.value;
   const expectedState = jar.get("etsy_state")?.value;
 
+  // Always clear the one-time PKCE/state cookies, on every outcome — a failed or
+  // replayed attempt must not leave them lingering for reuse.
+  const clear = () => {
+    jar.delete("etsy_pkce");
+    jar.delete("etsy_state");
+  };
+
   if (!code || !state || !verifier || state !== expectedState) {
+    clear();
     return NextResponse.redirect(`${siteConfig.url}/admin/sync?error=oauth_failed`);
   }
 
@@ -28,10 +36,10 @@ export async function GET(req: NextRequest) {
     const tok = await exchangeCodeForToken(code, verifier);
     await persistToken(tok);
   } catch (err) {
+    clear();
     return NextResponse.redirect(`${siteConfig.url}/admin/sync?error=${encodeURIComponent(String(err))}`);
   }
 
-  jar.delete("etsy_pkce");
-  jar.delete("etsy_state");
+  clear();
   return NextResponse.redirect(`${siteConfig.url}/admin/sync?connected=1`);
 }

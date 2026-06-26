@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { flags, tunables } from "@/lib/config";
+import { flags, tunables, missingEtsyVars } from "@/lib/config";
 import { isConnected } from "@/lib/etsy/client";
 import { triggerSync, resolveConflict } from "../actions";
 
@@ -35,10 +35,29 @@ export default async function SyncDashboard({
       {/* Connection + controls */}
       <div className="card mt-4 p-5">
         {!flags.etsyConfigured ? (
-          <p className="text-sm text-muted">
-            Etsy API keys not configured. The store works fully standalone. Add your Etsy app keys to
-            <code> .env</code> to enable two-way inventory sync (see README).
-          </p>
+          <div className="text-sm text-muted">
+            <p>
+              Etsy API keys not configured. The store works fully standalone. Add your Etsy app keys to
+              <code> .env</code> (or Vercel env) to enable two-way inventory sync (see README).
+            </p>
+            {missingEtsyVars().length > 0 && (
+              <p className="mt-2">
+                Missing:{" "}
+                {missingEtsyVars().map((v) => (
+                  <code key={v} className="mr-1 rounded bg-charcoal/5 px-1">{v}</code>
+                ))}
+              </p>
+            )}
+          </div>
+        ) : missingEtsyVars().length > 0 ? (
+          <div className="text-sm text-terracotta">
+            <p>Etsy keys present but sync needs a few more vars before it can connect:</p>
+            <p className="mt-2">
+              {missingEtsyVars().map((v) => (
+                <code key={v} className="mr-1 rounded bg-terracotta/10 px-1">{v}</code>
+              ))}
+            </p>
+          </div>
         ) : connected ? (
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-pine">✓ Connected to Etsy</p>

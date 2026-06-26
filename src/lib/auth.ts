@@ -9,7 +9,14 @@ const COOKIE = "mbk_admin";
 const MAX_AGE = 60 * 60 * 24 * 14; // 14 days
 
 function secret(): string {
-  return process.env.ADMIN_SESSION_SECRET || "insecure-dev-secret-change-me";
+  const s = process.env.ADMIN_SESSION_SECRET;
+  if (s) return s;
+  // Never run on the insecure dev fallback in production — fail closed so a
+  // missing secret can't quietly make admin sessions forgeable.
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("ADMIN_SESSION_SECRET is required in production");
+  }
+  return "insecure-dev-secret-change-me";
 }
 
 function sign(value: string): string {

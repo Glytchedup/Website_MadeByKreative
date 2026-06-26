@@ -6,6 +6,16 @@ import { updateProductContent } from "../../actions";
 
 export const dynamic = "force-dynamic";
 
+// Parse a JSON-string image array defensively (SQLite/Postgres store it as text).
+function safeImages(raw: string): string[] {
+  try {
+    const v = JSON.parse(raw || "[]");
+    return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
 export default async function EditProduct({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [product, collections] = await Promise.all([
@@ -24,8 +34,18 @@ export default async function EditProduct({ params }: { params: Promise<{ id: st
 
       <form action={updateProductContent} className="card mt-4 grid gap-3 p-6 sm:grid-cols-2">
         <input type="hidden" name="id" value={product.id} />
-        <label className="text-sm sm:col-span-2">Title<input name="title" defaultValue={product.title} className="mt-1 w-full rounded border border-charcoal/20 px-2 py-1.5" /></label>
+        <label className="text-sm sm:col-span-2">Title<input name="title" required defaultValue={product.title} className="mt-1 w-full rounded border border-charcoal/20 px-2 py-1.5" /></label>
         <label className="text-sm sm:col-span-2">Description<textarea name="description" defaultValue={product.description} rows={5} className="mt-1 w-full rounded border border-charcoal/20 px-2 py-1.5" /></label>
+        {!product.etsyListingId && (
+          <label className="text-sm sm:col-span-2">Image URLs (one per line)
+            <textarea
+              name="images"
+              defaultValue={safeImages(product.images).join("\n")}
+              rows={3}
+              className="mt-1 w-full rounded border border-charcoal/20 px-2 py-1.5"
+            />
+          </label>
+        )}
         <label className="text-sm">Status
           <select name="status" defaultValue={product.status} className="mt-1 w-full rounded border border-charcoal/20 px-2 py-1.5">
             <option value="active">active</option>

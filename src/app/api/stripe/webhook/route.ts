@@ -2,32 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
-import { addStock, queueEtsyPush } from "@/lib/inventory";
-import { sendOrderConfirmation } from "@/lib/email";
+import { forceDecrement, queueEtsyPush, tryReserve } from "@/lib/inventory";
+import { releaseOrder } from "@/lib/orders";
+import { sendOrderConfirmation, sendOversellAlert } from "@/lib/email";
 
 export const runtime = "nodejs";
-
-// Restore reserved stock for an order that didn't complete (expired/failed).
-async function releaseOrder(orderId: string) {
-  const order = await prisma.order.findUnique({ where: { id: orderId }, include: { items: true } });
-  if (!order || order.status !== "pending") return; // only release un-paid reservations
-  await prisma.$transaction(async (tx) => {
-    for (const item of order.items) {
-      await addStock(
-        item.variantId,
-        item.quantity,
-        { reason: "manual_correction", channel: "system", referenceId: orderId, note: "Released abandoned checkout" },
-        tx
-      );
-    }
-    await tx.order.update({ where: { id: orderId }, data: { status: "cancelled" } });
-  });
-  // Push restored availability back to Etsy.
-  for (const item of order.items) {
-    const v = await prisma.variant.findUnique({ where: { id: item.variantId } });
-    if (v?.etsyListingId) await queueEtsyPush(v.id, v.quantity).catch(() => {});
-  }
-}
 
 export async function POST(req: NextRequest) {
   if (!stripe) return NextResponse.json({ received: true, note: "stripe disabled" });
@@ -44,26 +23,95 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Webhook signature failed: ${String(err)}` }, { status: 400 });
   }
 
+  // Defense-in-depth idempotency: if we've already fully processed this event,
+  // ack and skip. (The order-status guards below are the primary mechanism; this
+  // is recorded AFTER processing, so a crash mid-handler safely re-runs on
+  // Stripe's redelivery rather than being lost.)
+  const seen = await prisma.processedStripeEvent.findUnique({ where: { eventId: event.id } });
+  if (seen) return NextResponse.json({ received: true, duplicate: true });
+
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
       const orderId = session.metadata?.orderId;
       if (orderId) {
         const order = await prisma.order.findUnique({ where: { id: orderId }, include: { items: true } });
-        if (order && order.status === "pending") {
-          await prisma.order.update({
-            where: { id: orderId },
-            data: {
-              status: "paid",
-              email: session.customer_details?.email || order.email,
-              shippingName: session.customer_details?.name || null,
-              shippingAddress: session.customer_details?.address
-                ? JSON.stringify(session.customer_details.address)
-                : null,
-              totalCents: session.amount_total ?? order.totalCents,
-            },
+        if (order) {
+          const paidData = {
+            status: "paid",
+            email: session.customer_details?.email || order.email,
+            shippingName: session.customer_details?.name || null,
+            shippingAddress: session.customer_details?.address
+              ? JSON.stringify(session.customer_details.address)
+              : null,
+            totalCents: session.amount_total ?? order.totalCents,
+            amountTaxCents: session.total_details?.amount_tax ?? 0,
+            // PaymentIntent id — needed to issue refunds later. Handle both the
+            // default string id and a (rare) expanded PaymentIntent object.
+            paymentIntentId:
+              typeof session.payment_intent === "string"
+                ? session.payment_intent
+                : session.payment_intent?.id ?? null,
+          };
+
+          // Normal path: the order is still "pending" (stock was reserved at
+          // checkout), so a single atomic update finalizes it. This guarded
+          // update is also the idempotency guard — Stripe's duplicate/retried
+          // deliveries find count 0 and fall through to the already-handled case.
+          const fromPending = await prisma.order.updateMany({
+            where: { id: orderId, status: "pending" },
+            data: paidData,
           });
-          // Stock was already reserved at checkout; just confirm Etsy is in sync.
+
+          // Oversold items captured during a revival; alerts fire AFTER commit.
+          const oversoldItems: { productTitle: string }[] = [];
+
+          if (fromPending.count === 0) {
+            // Revival path: a late-but-valid payment landed after the abandon-
+            // sweeper already cancelled + restocked the order. Claim cancelled ->
+            // paid AND re-reserve the units in ONE transaction, so the order is
+            // never marked paid without its stock durably re-reserved (crash-safe:
+            // if this rolls back, the order stays cancelled and a Stripe retry
+            // re-runs it cleanly). If a unit is gone (sold elsewhere in the gap),
+            // record the oversell rather than silently over-counting.
+            const result = await prisma.$transaction(async (tx) => {
+              const claim = await tx.order.updateMany({
+                where: { id: orderId, status: "cancelled" },
+                data: paidData,
+              });
+              if (claim.count === 0) return { revived: false, oversold: [] as { productTitle: string }[] };
+              const oversold: { productTitle: string }[] = [];
+              for (const item of order.items) {
+                const ok = await tryReserve(item.variantId, item.quantity, {
+                  reason: "site_sale", channel: "site", referenceId: orderId,
+                  note: "Re-reserved: payment confirmed after abandon-sweep",
+                }, tx);
+                if (!ok) {
+                  await forceDecrement(item.variantId, item.quantity, {
+                    reason: "site_sale", channel: "site", referenceId: orderId,
+                    note: "Oversell: paid after hold expired but stock already gone",
+                  }, tx);
+                  oversold.push({ productTitle: item.productTitle });
+                }
+              }
+              if (oversold.length) {
+                await tx.order.update({ where: { id: orderId }, data: { oversellFlag: true } });
+              }
+              return { revived: true, oversold };
+            });
+            if (!result.revived) break; // already paid/handled by another delivery
+            oversoldItems.push(...result.oversold);
+          }
+
+          // The order is now durably "paid" (and re-reserved if it was revived).
+          // Fire side-effects only AFTER the DB work has committed.
+          for (const item of oversoldItems) {
+            await sendOversellAlert({
+              orderId,
+              detail: `Order ${orderId} was paid after its checkout hold expired, but "${item.productTitle}" was no longer in stock — likely sold elsewhere in the meantime.`,
+            }).catch((e) => console.error("oversell alert failed", e));
+          }
+          // Confirm Etsy is in sync with our authoritative count.
           for (const item of order.items) {
             const v = await prisma.variant.findUnique({ where: { id: item.variantId } });
             if (v?.etsyListingId) await queueEtsyPush(v.id, v.quantity).catch(() => {});
@@ -92,6 +140,13 @@ export async function POST(req: NextRequest) {
       break;
     }
   }
+
+  // Record the event as processed (fast-path + audit). After side effects, so a
+  // crash before this point safely re-runs on redelivery. Swallow a unique-key
+  // clash from a concurrent duplicate delivery — the handlers are idempotent.
+  await prisma.processedStripeEvent
+    .create({ data: { eventId: event.id, type: event.type } })
+    .catch(() => {});
 
   return NextResponse.json({ received: true });
 }

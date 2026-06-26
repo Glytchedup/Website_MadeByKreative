@@ -84,7 +84,6 @@ export async function getCatalog(): Promise<Catalog> {
 
   const mapped: CatalogProduct[] = products.map((p) => {
     const variants = p.variants;
-    const inStock = variants.filter((v) => v.quantity > 0);
     const minPrice = variants.length ? Math.min(...variants.map((v) => v.priceCents)) : p.basePriceCents;
     const totalStock = variants.reduce((s, v) => s + Math.max(v.quantity, 0), 0);
     const labels = variants.map((v) => cleanSize(v.name)).filter((n) => n && n !== "Default");

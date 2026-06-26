@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { siteConfig } from "@/lib/config";
+import { siteConfig, flags } from "@/lib/config";
 import { CartProvider } from "@/components/cart/CartProvider";
 import { Analytics } from "@/components/Analytics";
+import { CookieConsent } from "@/components/CookieConsent";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         <CartProvider>{children}</CartProvider>
         <Analytics />
+        {flags.analyticsEnabled && <CookieConsent />}
       </body>
     </html>
   );

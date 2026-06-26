@@ -3,6 +3,133 @@
 All significant decisions and build steps for the MadeByKreative storefront. Entries note
 where judgment was exercised and why.
 
+## [0.6.0] — Full launch-readiness pass (whole-app sweep → 8 batches → review)
+
+A whole-application adversarial sweep (8 area auditors + verification) surfaced 18 confirmed
+bugs + 47 readiness tasks; all reversible work was implemented in 8 ordered batches, then
+re-reviewed by a 6-dimension adversarial pass (zero must-fix bugs confirmed; a few low-severity
+robustness wins applied). `next build` clean (19 routes), `npm run smoke` 27/27,
+`npm run sync:test` 6/6.
+
+- **Config/build:** Node `engines` + `.nvmrc`; documented prod `prisma db push` schema-apply
+  step; `ADMIN_SESSION_SECRET` required in prod; Stripe **test-vs-live** key guard (keyed on
+  `VERCEL_ENV` so local builds aren't broken); `scripts/check-secrets.sh` + `npm run check:secrets`.
+- **Security:** shared in-memory IP **rate limiter** on contact/newsletter/admin-login (429 +
+  Retry-After, shorter-window-first short-circuit); tighter zod bounds; **HTML-escaping** of all
+  email templates + JSON-LD; Etsy OAuth PKCE/state cookies cleared on every outcome.
+- **Payments/fulfillment:** `Order.paymentIntentId` / `amountTaxCents` / shipping fields; webhook
+  captures them (handles string or expanded PaymentIntent); **refund path** (`refundRestock`:
+  atomic, idempotent, inventory-restoring) + admin refund/fulfill/markShipped actions + shipping &
+  refund emails; checkout **releases reserved stock if Stripe session creation fails**; shipping
+  default **$4.99**; sales-tax capability behind a setting (off by default).
+- **Admin:** order action buttons (fulfill/ship/refund with confirm + pending states) + tracking
+  display; low-stock filter; required + server-side guards on set-qty and product title;
+  standalone-product image editor.
+- **Etsy:** bounded `EtsyPush` retry that escalates to a `qty_mismatch` conflict on give-up; sync
+  UI names the exact missing `ETSY_*` vars; multi-offering import warning; **mocked-client sync
+  integration test** (`scripts/sync-test.ts`) covering baseline / sale / idempotency /
+  unmapped-rollback / reconcile via a test seam.
+- **Storefront:** **cart clear-removes-item bug fixed** (clamp ≥1, removal only via Remove);
+  keyboard-operable Featured cards; modal focus-return; gallery-thumb aria labels; hero →
+  `next/Image` (LCP) + lazy-loaded below-fold images; storefront 404 page.
+- **SEO/legal/consent:** **Privacy + Terms pages** (drafts for review) + footer Legal links; GA4
+  **Consent Mode** (default-denied) + cookie banner (queues consent via dataLayer so it survives a
+  script-load race); clean, customer-ready policy fallback copy.
+- **Cleanups:** removed dead code; guarded `JSON.parse` in scripts; removed the misleading About
+  "edit in admin" note.
+- **`GO-LIVE.md`:** the owner-only launch runbook — provision, secrets, live Stripe (+ webhook +
+  tax/shipping), Resend, live Etsy OAuth, content/legal sign-off, DNS, and a pre-launch smoke list.
+  The only remaining work is these gated steps (live credentials, real money, legal facts, DNS).
+
+## [0.5.1] — Independent (Codex) review round: 4 fixes + preventative hardening
+
+An independent adversarial review (Codex) of the `[0.5.0]` changes surfaced four issues. A first
+fix pass closed two and **only partially** closed the other two; a second Codex pass caught the
+gaps, which were then reworked and **re-confirmed RESOLVED with no new issues**. `next build` clean
+(17 routes); `npm run smoke` → **23/23** (added concurrent-`releaseOrder` + strict-CAS cases).
+
+- **(HIGH) Webhook revival is now atomic** (`api/stripe/webhook`). The revive-a-cancelled-order
+  path previously marked the order `paid` and *then* re-reserved stock in a loop outside any
+  transaction — a crash in between left a paid-but-unreserved order, and a Stripe retry skipped the
+  reserve. Now the claim (`cancelled`→`paid`) **and** all re-reserve / `forceDecrement` /
+  `oversellFlag` writes commit in **one transaction**; email/Etsy-push/oversell-alert fire only
+  after commit. Crash-safe and idempotent against duplicate deliveries.
+- **(HIGH) Receipt polling fetches the COMPLETE set** (`etsy/sync` + `etsy/client`).
+  `getShopReceipts` gained an `offset`; `fetchAllReceiptsSince()` pages (size 100) until the source
+  is naturally exhausted, for both the first-run baseline and normal polling. Previously only the
+  first page was read, so >100 sales between polls — or an **established shop's** first connect —
+  silently dropped everything past it. *(First fix attempt kept a page cap that truncated and still
+  advanced the cursor — the same bug in disguise; Codex caught it.)* The cap is now a pure
+  infinite-loop backstop that **throws** (`ReceiptPageGuardError`) so the cursor is left unadvanced
+  and the next poll retries — fail-loud, never silent-drop. Because the full set is fetched, the
+  cursor advance is safe regardless of Etsy's result ordering (no reliance on an unconfirmed
+  `sort_on` param).
+- **(MEDIUM) Conflict "use Etsy qty" is race-safe** (`inventory` + `admin/actions`). It re-queries
+  the **live** Etsy quantity at resolution time (the stored `etsyQty` snapshot could resurrect a
+  since-sold item), AND — the part the first attempt missed — guards the write: `setStock` gained an
+  `opts.expectedCurrent` **strict compare-and-swap** that throws `StockChangedError` if a sale slips
+  in between the observation and the commit, rolling back the whole resolution (conflict stays open)
+  rather than resurrecting a unit. Preventative: a single shared `liveEtsyQuantitySafe` /
+  `fetchLiveEtsyQuantity` helper now backs reconcile, the JIT guard, and conflict resolution
+  (removing three copies of the same fetch that could drift).
+- **(LOW) Concurrent polls no longer abort on a unique-key clash** (`etsy/sync`). If two polls race
+  the same new receipt, the loser's `ProcessedEtsyReceipt` insert now fails with P2002, which is
+  caught and treated as already-processed (skip + continue) instead of throwing out of the whole
+  poll. Safe because Postgres blocks the second insert until the first txn commits, so the receipt
+  is genuinely applied by then.
+- **Preventative: `ProcessedStripeEvent` idempotency table** (new model + `api/stripe/webhook`).
+  Defense-in-depth fast-path + audit log keyed on Stripe `event.id`. Written **after** successful
+  processing (a duplicate/redelivery is skipped up front; a crash mid-handler safely re-runs, since
+  the handlers are already idempotent) — deliberately *not* record-before, which would risk an
+  at-most-once hole. Applied to the DB via `prisma db push`.
+
+## [0.5.0] — Phase 0 launch audit + four inventory/sync correctness fixes
+
+- **`AUDIT.md`**: full Phase-0 launch-readiness audit (8 dimensions, adversarially verified;
+  4 plausible-but-wrong findings refuted) with a 35-row prioritized punch list and a 7-item
+  human-gate checklist. Verdict: engine is launch-ready; remaining work is prod config +
+  legal/policy content + a few robustness fixes. No launch blocker is an architecture defect.
+- Implemented the four highest-risk **reversible** correctness fixes from the audit:
+  1. **Unmapped Etsy receipt no longer loses its decrement** (`etsy/sync.ts`). A receipt is now
+     applied **all-or-nothing**: an unmapped transaction throws `UnmappedReceiptError`, rolling
+     back the whole receipt (including the `ProcessedEtsyReceipt` row), and the poll cursor is
+     **not advanced past it** (`cursor = min(maxTs, earliestUnmapped-1)`), so it retries once the
+     listing↔variant mapping exists. Previously the receipt was marked processed and the sale was
+     silently dropped — defeating oversell prevention during the first-import window.
+  2. **Oversell detection now alerts the maker** (`etsy/sync.ts` + `email.ts`). When a receipt
+     drives stock negative, the affected order's `oversellFlag` is set and `sendOversellAlert`
+     fires (previously dead code — the flag was never set and the email never called). Alerts are
+     sent after the DB txn; oversells from a rolled-back receipt are not alerted.
+  3. **Stale-order sweeper** (new `lib/orders.ts`; wired into the cron). Abandoned checkouts
+     (stock is reserved *before* payment) are released after 40 min (30-min Stripe expiry + 10
+     buffer) as a backstop for a missed `checkout.session.expired` webhook — previously such an
+     order locked a one-of-a-few unit out of stock on both channels forever. `releaseOrder` now
+     **atomically claims** the order (`updateMany where status='pending'`) so the webhook and the
+     sweeper can't double-restock; the webhook was refactored to share it. The sweep runs in the
+     cron **before** `runFullSync` and independent of Etsy connectivity.
+  4. **`setStock()` is now atomic** (`lib/inventory.ts`). Replaced the read-then-write (TOCTOU)
+     with a compare-and-swap loop inside a transaction (`updateMany where quantity = expected`,
+     re-read + retry on contention). An admin count-correction racing a customer reserve can no
+     longer clobber the decrement and silently restore a sold unit. `resolveConflict` now wraps
+     its claim + stock change in **one transaction** (same root cause): if `setStock` throws, the
+     "resolved" status rolls back too, so the conflict stays open and is safely retryable.
+- **Review-driven hardening:** a multi-agent adversarial review of the four fixes confirmed two
+  self-introduced regressions, both fixed and re-verified:
+  - The abandon-sweeper could cancel an order whose `checkout.session.completed` webhook was
+    delayed past the buffer, leaving a *paid* order marked cancelled (and its stock wrongly
+    restocked). The webhook now finalizes via a conditional update that detects the exact prior
+    state: a normal `pending` order, or a sweeper-cancelled one it **revives and re-reserves** —
+    flagging an oversell + alerting the maker if a unit sold elsewhere in the gap. Fully
+    idempotent against Stripe's duplicate/retried events.
+  - `resolveConflict` previously marked the conflict resolved *before* applying `setStock`
+    (fixed by the single-transaction wrap above). The unmapped-receipt and oversell-alert fixes
+    were reviewed clean (the unmapped-receipt cursor stall on a permanently-unmappable receipt is
+    the intended retry-until-mapped behavior).
+- **Tests:** added 3 smoke cases — concurrent `setStock` vs reserves keeps the ledger invariant,
+  `forceDecrement` past zero reports `wentNegative` with the invariant intact, and a multi-item
+  order rolls back fully when one line is short. `npm run smoke` → **15/15 pass**; `next build`
+  clean (17 routes).
+
 ## [0.4.6] — Phone-friendly guide + interactive profit calculator
 
 - `docs/kristol-guide.html`: a **single self-contained, mobile-responsive** page (no app/account, works

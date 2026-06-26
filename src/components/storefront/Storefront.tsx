@@ -6,6 +6,7 @@
 // cart; the cart button links to /cart. Etsy links remain as a secondary CTA.
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/components/cart/CartProvider";
 import { StoreHeader } from "@/components/storefront/StoreHeader";
@@ -77,6 +78,8 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
   const flyLayer = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const addedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // The element that opened the modal, so focus returns to it on close (H3).
+  const lastFocused = useRef<HTMLElement | null>(null);
 
   const selectedVariant = (p: CatalogProduct): CatalogVariant | undefined => {
     const chosen = p.variants.find((v) => v.id === sizeSel[p.id]);
@@ -203,13 +206,20 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
   const mBadge = mp ? badgeFor(mp) : "";
 
   function openProduct(id: string) {
+    if (typeof document !== "undefined") {
+      lastFocused.current = document.activeElement as HTMLElement | null;
+      document.body.style.overflow = "hidden";
+    }
     setOpenId(id);
     setGalleryIdx(0);
-    if (typeof document !== "undefined") document.body.style.overflow = "hidden";
   }
   function closeProduct() {
     setOpenId(null);
-    if (typeof document !== "undefined") document.body.style.overflow = "";
+    if (typeof document !== "undefined") {
+      document.body.style.overflow = "";
+      // Return focus to whatever opened the dialog.
+      lastFocused.current?.focus?.();
+    }
   }
 
   // Modal keyboard support (H3): Esc closes, Tab is trapped inside the dialog,
@@ -297,7 +307,7 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
 
           <div style={{ position: "relative", flex: "1.2 1 460px", minWidth: 320 }}>
             <div style={{ position: "relative", aspectRatio: "16/11", overflow: "hidden", borderRadius: 3, boxShadow: "0 34px 66px rgba(60,45,25,0.2), 0 4px 14px rgba(60,45,25,0.08)", background: "#E4D7C2" }}>
-              <img src="/hero.jpg" alt="Handmade Halloween rag garland draped across a fireplace mantel" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 52%" }} />
+              <Image src="/hero.jpg" alt="Handmade Halloween rag garland draped across a fireplace mantel" fill priority sizes="(max-width: 900px) 100vw, 55vw" style={{ objectFit: "cover", objectPosition: "center 52%" }} />
               <div style={{ position: "absolute", left: 0, right: 0, bottom: -1, height: 13, background: C.cream, pointerEvents: "none", WebkitMask: frayMask, mask: frayMask }} />
             </div>
           </div>
@@ -329,7 +339,7 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%,240px), 1fr))", gap: 18 }}>
             {newArrivals.map((n) => (
               <button key={n.id} onClick={() => openProduct(n.id)} style={{ position: "relative", display: "block", padding: 0, border: "none", cursor: "pointer", background: "#E4D7C2", borderRadius: 4, overflow: "hidden", aspectRatio: "4/3.1", boxShadow: "0 2px 10px rgba(60,45,25,0.08)", textAlign: "left" }}>
-                {n.images[0] && <img src={n.images[0]} alt={n.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />}
+                {n.images[0] && <img src={n.images[0]} alt={n.title} loading="lazy" decoding="async" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />}
                 <span style={{ position: "absolute", top: 12, left: 12, display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(254,252,248,0.92)", color: C.ink, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", padding: "5px 10px", borderRadius: 999, backdropFilter: "blur(4px)" }}><span style={{ color: C.clay, fontSize: 12, lineHeight: 1 }}>&#10022;</span> New</span>
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(38,28,16,0.78) 0%, rgba(38,28,16,0.12) 46%, transparent 68%)" }} />
                 <div style={{ position: "absolute", left: 16, right: 16, bottom: 14, color: C.cream }}>
@@ -363,7 +373,7 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
                 <a key={name} href="#shop" onClick={() => setSeasonFilter(name)} style={{ textDecoration: "none", position: "relative", display: "block", aspectRatio: "3/4", borderRadius: 3, overflow: "hidden", boxShadow: "0 2px 8px rgba(60,45,25,0.08)" }}>
                   {img ? (
                     <>
-                      <img src={img} alt={`${name} banners`} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+                      <img src={img} alt={`${name} banners`} loading="lazy" decoding="async" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
                       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(40,30,18,0.62) 0%, rgba(40,30,18,0.05) 48%, transparent 70%)" }} />
                       <span style={{ position: "absolute", left: 14, bottom: 13, right: 12, fontFamily: serif, fontSize: 20, fontWeight: 500, color: "#FEFCF8", lineHeight: 1.05 }}>{name}</span>
                     </>
@@ -410,10 +420,26 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
             const imgs = p.images;
             const img = (hov && imgs[1]) ? imgs[1] : imgs[0];
             return (
-              <div key={p.id} onMouseEnter={() => setHovered(p.id)} onMouseLeave={() => setHovered((h) => (h === p.id ? null : h))} onClick={() => openProduct(p.id)} style={{ position: "relative", cursor: "pointer", background: "#FEFCF8", borderRadius: 4, border: `1px solid ${C.line}`, transition: "transform .35s cubic-bezier(.2,.7,.3,1), box-shadow .35s ease", transform: hov ? "translateY(-6px)" : "translateY(0)", boxShadow: hov ? "0 22px 44px rgba(60,45,25,0.18)" : "0 1px 4px rgba(60,45,25,0.06)" }}>
+              <div
+                key={p.id}
+                role="button"
+                tabIndex={0}
+                aria-label={`View details for ${p.title}`}
+                onMouseEnter={() => setHovered(p.id)}
+                onMouseLeave={() => setHovered((h) => (h === p.id ? null : h))}
+                onClick={() => openProduct(p.id)}
+                onKeyDown={(e) => {
+                  // Only the card itself (not a nested size/Add button) opens the modal.
+                  if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
+                    e.preventDefault();
+                    openProduct(p.id);
+                  }
+                }}
+                style={{ position: "relative", cursor: "pointer", background: "#FEFCF8", borderRadius: 4, border: `1px solid ${C.line}`, transition: "transform .35s cubic-bezier(.2,.7,.3,1), box-shadow .35s ease", transform: hov ? "translateY(-6px)" : "translateY(0)", boxShadow: hov ? "0 22px 44px rgba(60,45,25,0.18)" : "0 1px 4px rgba(60,45,25,0.06)" }}
+              >
                 <div style={{ position: "relative", aspectRatio: "4/5", overflow: "hidden", borderRadius: "4px 4px 0 0" }}>
                   {img ? (
-                    <img src={img} alt={p.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transformOrigin: "center", transition: "transform .8s cubic-bezier(.2,.7,.3,1)", transform: hov ? "scale(1.07)" : "scale(1)" }} />
+                    <img src={img} alt={p.title} loading="lazy" decoding="async" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transformOrigin: "center", transition: "transform .8s cubic-bezier(.2,.7,.3,1)", transform: hov ? "scale(1.07)" : "scale(1)" }} />
                   ) : (
                     <div style={{ position: "absolute", inset: 0, backgroundColor: "#D9CDBA", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(46,42,36,0.4)" }}>&#9788;</div>
                   )}
@@ -505,7 +531,7 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))", gap: "clamp(36px,5vw,68px)", alignItems: "center" }}>
             <div style={{ position: "relative" }}>
               <div style={{ aspectRatio: "4/5", borderRadius: 3, overflow: "hidden", boxShadow: "0 24px 50px rgba(60,45,25,0.16)", backgroundColor: "#DCCBB3" }}>
-                <img src="/maker-portrait.jpg" alt="Kristol sewing a shabby rag garland at her Bernina machine, the Gilbert water tower visible through the window" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "62% 50%", display: "block" }} />
+                <img src="/maker-portrait.jpg" alt="Kristol sewing a shabby rag garland at her Bernina machine, the Gilbert water tower visible through the window" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "62% 50%", display: "block" }} />
               </div>
               <div style={{ position: "absolute", top: -16, right: -14, background: C.clayDark, color: C.cream, width: 96, height: 96, borderRadius: "50%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", transform: "rotate(8deg)", boxShadow: "0 12px 26px rgba(176,104,63,0.32)" }}>
                 <span style={{ fontFamily: script, fontSize: 26, lineHeight: 0.95 }}>since</span>
@@ -568,8 +594,8 @@ export function Storefront({ catalog }: { catalog: Catalog }) {
               {mImgs.length > 1 && (
                 <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
                   {mImgs.map((im, idx) => (
-                    <button key={idx} onClick={() => setGalleryIdx(idx)} style={{ width: 62, height: 62, borderRadius: 3, overflow: "hidden", padding: 0, cursor: "pointer", background: "none", border: idx === gi ? `2px solid ${C.clay}` : "2px solid rgba(110,90,60,0.22)", opacity: idx === gi ? 1 : 0.7 }}>
-                      <img src={im} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                    <button key={idx} onClick={() => setGalleryIdx(idx)} aria-label={`View image ${idx + 1}`} aria-pressed={idx === gi} style={{ width: 62, height: 62, borderRadius: 3, overflow: "hidden", padding: 0, cursor: "pointer", background: "none", border: idx === gi ? `2px solid ${C.clay}` : "2px solid rgba(110,90,60,0.22)", opacity: idx === gi ? 1 : 0.7 }}>
+                      <img src={im} alt="" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                     </button>
                   ))}
                 </div>

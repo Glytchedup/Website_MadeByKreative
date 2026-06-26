@@ -29,9 +29,6 @@ export default function AboutPage() {
           here, you&apos;re getting a genuinely handmade piece, not a factory print. Thank you for
           supporting a small, family-run business. It means the world. 💛
         </p>
-        <p className="text-sm text-muted">
-          <em>(Placeholder copy, Kristol, edit this anytime in the admin to tell your story in your own words, and add a photo.)</em>
-        </p>
       </div>
 
       <div className="mt-10 grid gap-4 sm:grid-cols-3 text-center">

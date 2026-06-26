@@ -18,6 +18,20 @@ export const flags = {
   analyticsEnabled: Boolean(process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID),
 };
 
+// Etsy env vars required for a FULLY working two-way sync (beyond the keystring +
+// secret that `etsyConfigured` checks). Surfaced in the admin sync UI so the maker
+// knows exactly what's still missing instead of a generic "not configured".
+export const ETSY_REQUIRED_VARS = [
+  "ETSY_KEYSTRING",
+  "ETSY_SHARED_SECRET",
+  "ETSY_REDIRECT_URI",
+  "ETSY_SHOP_ID",
+] as const;
+
+export function missingEtsyVars(): string[] {
+  return ETSY_REQUIRED_VARS.filter((k) => !process.env[k]);
+}
+
 export function intEnv(name: string, fallback: number): number {
   const raw = process.env[name];
   if (!raw) return fallback;

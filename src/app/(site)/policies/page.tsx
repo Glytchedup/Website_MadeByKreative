@@ -16,17 +16,19 @@ async function getPolicy(key: string, fallback: string) {
 }
 
 export default async function PoliciesPage() {
+  // Default drafts (editable in admin → Settings). Kept clean & customer-ready —
+  // the maker should confirm turnaround/carrier/return-window and Save to override.
   const shipping = await getPolicy(
     "policy_shipping",
-    "Most orders ship within 1–3 business days via USPS. You'll receive tracking by email. (Placeholder, confirm your real turnaround and carrier in admin.)"
+    "Most orders ship within 1–3 business days, with tracking sent to your email. We ship within the US and Canada at a flat rate shown at checkout. Because each piece is handmade in small batches, please allow a little extra time during busy seasons."
   );
   const returns = await getPolicy(
     "policy_returns",
-    "Because items are handmade, please contact me within 7 days of delivery for any issue and I'll make it right with a replacement or refund. (Placeholder, confirm your return policy.)"
+    "Every item is handmade, so small variations are part of the charm. If anything arrives damaged or isn't right, contact us within 7 days of delivery and we'll make it right with a replacement or refund. Custom orders are made to your specifications and may not be returnable."
   );
   const faq = await getPolicy(
     "policy_faq",
-    "Q: Are these really handmade? Yes, every piece is sewn by hand by Kristol.\nQ: Can I request a custom color? Often yes, use the contact page to ask!\n(Placeholder FAQ, edit in admin.)"
+    "Q: Are these really handmade?\nYes — every piece is cut, knotted, and sewn by hand by Kristol in Gilbert, Arizona.\n\nQ: Can I request a custom color or size?\nOften, yes! Use the contact page to tell us what you're picturing and we'll confirm before starting.\n\nQ: Do you restock sold-out items?\nMany seasonal pieces come back — follow us on Etsy or join the newsletter for restocks."
   );
 
   return (
