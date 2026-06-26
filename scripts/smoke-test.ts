@@ -13,7 +13,7 @@ import {
   verifyLedgerInvariant,
   StockChangedError,
 } from "../src/lib/inventory";
-import { releaseOrder } from "../src/lib/orders";
+import { releaseOrder, refundRestock } from "../src/lib/orders";
 
 const prisma = new PrismaClient();
 let failures = 0;
@@ -193,6 +193,34 @@ async function main() {
   check("setStock strict-CAS applies when the expected basis matches", casApplied === 5);
   check("setStock strict-CAS keeps ledger invariant", await verifyLedgerInvariant(casVar.id));
   await prisma.variant.delete({ where: { id: casVar.id } });
+
+  // 11) refundRestock: a paid order's refund restores stock EXACTLY once and is
+  //     idempotent (a double-submit / webhook retry can't restock twice).
+  const refVar = await prisma.variant.create({
+    data: { productId: variant.productId, name: `smoke-refund-${Date.now()}`, priceCents: 100, quantity: 0 },
+  });
+  await addStock(refVar.id, 3, { reason: "initial", channel: "system", note: "refund seed" });
+  const refOrder = await prisma.$transaction(async (tx) => {
+    const o = await tx.order.create({
+      data: { stripeSessionId: `smoke_ref_${Date.now()}`, email: "smoke@ref", status: "paid", totalCents: 200 },
+    });
+    await tryReserve(refVar.id, 2, { reason: "site_sale", channel: "site", referenceId: o.id, note: "smoke refund" }, tx);
+    await tx.orderItem.create({
+      data: { orderId: o.id, variantId: refVar.id, productTitle: "smoke", variantName: "Default", quantity: 2, unitPriceCents: 100 },
+    });
+    return o;
+  });
+  const refBefore = await prisma.variant.findUniqueOrThrow({ where: { id: refVar.id } }); // qty 1
+  const r1 = await refundRestock(refOrder.id);
+  const r2 = await refundRestock(refOrder.id); // idempotent no-op
+  const refAfter = await prisma.variant.findUniqueOrThrow({ where: { id: refVar.id } });
+  const refOrderFinal = await prisma.order.findUniqueOrThrow({ where: { id: refOrder.id } });
+  check("refundRestock restores reserved stock exactly once", r1 === true && refBefore.quantity === 1 && refAfter.quantity === 3);
+  check("refundRestock is idempotent (second call is a no-op)", r2 === false && refAfter.quantity === 3);
+  check("refunded order ends up status 'refunded'", refOrderFinal.status === "refunded");
+  check("refund keeps ledger invariant", await verifyLedgerInvariant(refVar.id));
+  await prisma.order.delete({ where: { id: refOrder.id } });
+  await prisma.variant.delete({ where: { id: refVar.id } });
 
   console.log(`\n${failures === 0 ? "✅ ALL CHECKS PASSED" : `❌ ${failures} CHECK(S) FAILED`}`);
   process.exit(failures === 0 ? 0 : 1);

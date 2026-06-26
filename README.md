@@ -132,16 +132,34 @@ Tunables (in `.env`, also shown in admin Settings):
 ## ☁️ Deploy (Vercel)
 
 1. Push this repo to GitHub (already done) and import it in Vercel.
-2. Switch the database to Postgres for production:
-   - In `prisma/schema.prisma` set `provider = "postgresql"`.
-   - Set `DATABASE_URL` in Vercel to your Postgres connection string (Vercel Postgres,
-     Neon, Supabase, etc.). Run `npx prisma migrate deploy` (or `db push`) against it.
-3. Add **all** the env vars from `.env.example` in the Vercel project settings (use your
-   live Stripe keys + production Etsy redirect URI + a strong `ADMIN_PASSWORD`,
-   `ADMIN_SESSION_SECRET`, and `CRON_SECRET`).
-4. `vercel.json` already schedules the Etsy sync cron every 3 minutes. Vercel Cron calls
-   `/api/cron/etsy-sync`; it's protected by `CRON_SECRET`.
-5. Update `NEXT_PUBLIC_SITE_URL` to your real domain.
+2. **Database (Postgres).** `prisma/schema.prisma` is already `provider = "postgresql"`
+   with a pooled `url` (`DATABASE_URL`) + unpooled `directUrl` (`DATABASE_URL_UNPOOLED`).
+   Provision Postgres (Neon/Vercel Postgres/Supabase) and set both in Vercel.
+   - **Schema apply (one-time + on every schema change).** This project uses the
+     **`prisma db push`** workflow (no `migrations/` folder), so the schema is **not**
+     applied by `npm run build` — that's deliberate (a build shouldn't mutate the prod DB on
+     every preview). Apply it explicitly against the prod DB **once before first traffic and
+     again whenever `schema.prisma` changes**:
+     ```bash
+     DATABASE_URL=<prod-pooled> DATABASE_URL_UNPOOLED=<prod-direct> npx prisma db push
+     ```
+     (If you prefer migrations later, run `npx prisma migrate dev` once to create an initial
+     migration, then `prisma migrate deploy` in CI.)
+3. Add **all** the env vars from `.env.example` in the Vercel project settings: **live**
+   Stripe keys (`sk_live_…` / `pk_live_…`) + the **live-mode** `STRIPE_WEBHOOK_SECRET`,
+   production Etsy redirect URI, verified Resend `EMAIL_FROM` + `MAKER_NOTIFICATION_EMAIL`,
+   and strong `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`, `CRON_SECRET`. The app **fails fast
+   in production** if Stripe keys are test-mode or `ADMIN_SESSION_SECRET` is unset.
+4. **Stripe webhook.** In the Stripe dashboard add an endpoint at
+   `https://<your-domain>/api/stripe/webhook` subscribed to
+   `checkout.session.completed`, `checkout.session.expired`, and
+   `checkout.session.async_payment_failed`; paste its signing secret as
+   `STRIPE_WEBHOOK_SECRET`.
+5. `vercel.json` already schedules the Etsy sync cron. Vercel Cron calls
+   `/api/cron/etsy-sync` (protected by `CRON_SECRET`); it also sweeps abandoned checkouts.
+6. Set `NEXT_PUBLIC_SITE_URL` to your real domain and add the prod
+   `…/api/etsy/callback` redirect URI to the Etsy app, then connect Etsy from `/admin`.
+7. Run `npm run check:secrets` before pushing; `npm run smoke` to re-verify inventory.
 
 ---
 

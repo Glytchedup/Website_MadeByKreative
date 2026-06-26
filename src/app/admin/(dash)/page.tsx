@@ -39,7 +39,7 @@ export default async function AdminDashboard() {
         <Stat label="Paid orders" value={paidOrders} href="/admin/orders" />
         <Stat label="Open sync conflicts" value={openConflicts} href="/admin/sync" tone={openConflicts ? "ring-2 ring-terracotta/40" : ""} />
         <Stat label="Pending Etsy pushes" value={pendingPushes} href="/admin/sync" />
-        <Stat label="⚠️ Oversell flags" value={oversells} href="/admin/sync" tone={oversells ? "ring-2 ring-red-400" : ""} />
+        <Stat label="⚠️ Oversell flags" value={oversells} href="/admin/orders" tone={oversells ? "ring-2 ring-red-400" : ""} />
       </div>
 
       <div className="mt-8 card p-5">

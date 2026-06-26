@@ -5,6 +5,16 @@ import { formatPrice } from "./money";
 const resend = flags.emailEnabled ? new Resend(process.env.RESEND_API_KEY!) : null;
 const FROM = process.env.EMAIL_FROM || "MadeByKreative <onboarding@resend.dev>";
 
+/** Escape user/external text before embedding it in an HTML email body. */
+function esc(s: string): string {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 async function send(to: string, subject: string, html: string) {
   if (!resend) {
     // Graceful degradation: log instead of failing when email isn't configured.
@@ -23,7 +33,7 @@ export async function sendOrderConfirmation(opts: {
   const rows = opts.items
     .map(
       (i) =>
-        `<tr><td style="padding:6px 0">${i.quantity} × ${i.title} <span style="color:#7A7268">(${i.variant})</span></td>` +
+        `<tr><td style="padding:6px 0">${i.quantity} × ${esc(i.title)} <span style="color:#7A7268">(${esc(i.variant)})</span></td>` +
         `<td align="right">${formatPrice(i.unitPriceCents * i.quantity)}</td></tr>`
     )
     .join("");
@@ -54,11 +64,45 @@ export async function sendOversellAlert(opts: {
   <div style="font-family:sans-serif;color:#3A352F">
     <h2 style="color:#B85C38">⚠️ Possible oversell, action needed</h2>
     <p>An order may have sold an item that was already gone (likely sold on Etsy too).</p>
-    <p><strong>Order:</strong> ${opts.orderId}</p>
-    <p>${opts.detail}</p>
+    <p><strong>Order:</strong> ${esc(opts.orderId)}</p>
+    <p>${esc(opts.detail)}</p>
     <p>Open the admin sync dashboard to review and, if needed, refund the customer.</p>
   </div>`;
   return send(to, `⚠️ MadeByKreative: possible oversell on order ${opts.orderId}`, html);
+}
+
+export async function sendShippingNotification(opts: {
+  to: string;
+  orderId: string;
+  carrier?: string | null;
+  trackingNumber?: string | null;
+}) {
+  const tracking = opts.trackingNumber
+    ? `<p>Tracking: <strong>${esc(opts.trackingNumber)}</strong>${
+        opts.carrier ? ` (${esc(opts.carrier)})` : ""
+      }</p>`
+    : "";
+  const html = `
+  <div style="font-family:Georgia,serif;max-width:560px;margin:auto;color:#3A352F">
+    <h1 style="color:#B85C38">Your order is on its way! 📦</h1>
+    <p>Good news — your handmade goods from ${siteConfig.name} have shipped.</p>
+    ${tracking}
+    <p>Order ref: <code>${esc(opts.orderId)}</code></p>
+    <p style="color:#7A7268">Thank you for supporting handmade. — ${siteConfig.maker}</p>
+  </div>`;
+  return send(opts.to, `Your ${siteConfig.name} order has shipped`, html);
+}
+
+export async function sendRefundConfirmation(opts: { to: string; orderId: string; amountCents: number }) {
+  const html = `
+  <div style="font-family:Georgia,serif;max-width:560px;margin:auto;color:#3A352F">
+    <h1 style="color:#B85C38">Your refund has been issued</h1>
+    <p>We've refunded ${formatPrice(opts.amountCents)} for order
+       <code>${esc(opts.orderId)}</code>. It may take a few business days to appear on your
+       statement.</p>
+    <p style="color:#7A7268">Questions? Just reply to this email.</p>
+  </div>`;
+  return send(opts.to, `Your ${siteConfig.name} refund`, html);
 }
 
 export async function sendContactMessage(opts: { name: string; email: string; message: string }) {
@@ -66,7 +110,7 @@ export async function sendContactMessage(opts: { name: string; email: string; me
   if (!to) return;
   const html = `<div style="font-family:sans-serif">
     <h3>New contact message</h3>
-    <p><strong>From:</strong> ${opts.name} &lt;${opts.email}&gt;</p>
-    <p>${opts.message.replace(/\n/g, "<br>")}</p></div>`;
+    <p><strong>From:</strong> ${esc(opts.name)} &lt;${esc(opts.email)}&gt;</p>
+    <p>${esc(opts.message).replace(/\n/g, "<br>")}</p></div>`;
   return send(to, `New message from ${opts.name}`, html);
 }

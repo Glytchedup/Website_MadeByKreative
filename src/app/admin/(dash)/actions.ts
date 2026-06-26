@@ -26,7 +26,11 @@ export async function restockVariant(formData: FormData) {
 export async function correctVariantStock(formData: FormData) {
   await requireAdmin();
   const variantId = String(formData.get("variantId"));
-  const absolute = Number(formData.get("absolute"));
+  // An EMPTY input must be ignored, not coerced to 0 (Number("") === 0) — that
+  // would silently zero out stock on a blank submit.
+  const raw = formData.get("absolute");
+  if (raw === null || String(raw).trim() === "") return;
+  const absolute = Number(raw);
   if (!variantId || !Number.isFinite(absolute) || absolute < 0) return;
   await setStock(variantId, absolute, {
     reason: "manual_correction",
@@ -81,17 +85,33 @@ export async function updateProductContent(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id"));
   const title = String(formData.get("title") || "").trim();
+  // Title is required (the `required` attr is client-side only and bypassable).
+  if (!id || !title) return;
   const description = String(formData.get("description") || "");
   const status = String(formData.get("status") || "active");
   const collectionId = String(formData.get("collectionId") || "") || null;
   const featured = formData.get("featured") === "on";
   const bestSeller = formData.get("bestSeller") === "on";
-  await prisma.product.update({
-    where: { id },
-    data: { title, description, status, collectionId, featured, bestSeller },
-  });
+
+  const data: {
+    title: string; description: string; status: string;
+    collectionId: string | null; featured: boolean; bestSeller: boolean; images?: string;
+  } = { title, description, status, collectionId, featured, bestSeller };
+
+  // Image URLs are editable only for STANDALONE products. Etsy-linked products
+  // have their images mirrored from Etsy on every sync, so editing here would be
+  // overwritten — the UI hides the field for them; guard the action too.
+  const existing = await prisma.product.findUnique({ where: { id }, select: { etsyListingId: true } });
+  const imagesRaw = formData.get("images");
+  if (existing && !existing.etsyListingId && imagesRaw != null) {
+    const images = String(imagesRaw).split(/\n|,/).map((s) => s.trim()).filter(Boolean);
+    data.images = JSON.stringify(images);
+  }
+
+  await prisma.product.update({ where: { id }, data });
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${id}`);
+  revalidatePath(`/products`);
 }
 
 // ----- Settings ---------------------------------------------------------------

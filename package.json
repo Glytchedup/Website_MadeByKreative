@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "description": "MadeByKreative — handmade fabric goods storefront with two-way Etsy inventory sync",
+  "engines": {
+    "node": ">=18.18.0 <23"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
@@ -15,7 +18,8 @@
     "db:studio": "prisma studio",
     "db:seed": "tsx --env-file=.env prisma/seed.ts",
     "etsy:sync": "tsx --env-file=.env scripts/run-sync.ts",
-    "smoke": "tsx --env-file=.env scripts/smoke-test.ts"
+    "smoke": "tsx --env-file=.env scripts/smoke-test.ts",
+    "check:secrets": "bash scripts/check-secrets.sh"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

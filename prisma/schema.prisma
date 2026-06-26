@@ -131,12 +131,20 @@ model LedgerEntry {
 model Order {
   id              String      @id @default(cuid())
   stripeSessionId String      @unique
+  // Stripe PaymentIntent id, captured on payment — needed to issue refunds.
+  paymentIntentId String?
   email           String
-  status          String      @default("paid") // pending | paid | fulfilled | refunded | cancelled
+  status          String      @default("paid") // pending | paid | fulfilled | shipped | refunded | cancelled
   totalCents      Int
+  // Sales tax collected (cents), if Stripe Tax is enabled. 0 when tax is off.
+  amountTaxCents  Int         @default(0)
   currency        String      @default("usd")
   shippingName    String?
   shippingAddress String? // JSON
+  // Fulfillment / shipping.
+  shippedAt       DateTime?
+  trackingNumber  String?
+  carrier         String?
   // True if a post-payment oversell was detected for this order (needs maker action).
   oversellFlag    Boolean     @default(false)
   items           OrderItem[]

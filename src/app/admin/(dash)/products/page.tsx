@@ -6,7 +6,13 @@ import { createProduct, restockVariant, correctVariantStock } from "../actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminProducts() {
+export default async function AdminProducts({
+  searchParams,
+}: {
+  searchParams: Promise<{ low?: string }>;
+}) {
+  const { low } = await searchParams;
+  const lowOnly = low === "1";
   const threshold = tunables.lowStockThreshold();
   const [products, collections] = await Promise.all([
     prisma.product.findMany({
@@ -16,6 +22,12 @@ export default async function AdminProducts() {
     prisma.collection.findMany({ orderBy: { sortOrder: "asc" } }),
   ]);
 
+  // "Low stock" = at or below the threshold (includes out-of-stock) on any variant.
+  const lowCount = products.filter((p) => p.variants.some((v) => v.quantity <= threshold)).length;
+  const shown = lowOnly
+    ? products.filter((p) => p.variants.some((v) => v.quantity <= threshold))
+    : products;
+
   return (
     <div>
       <h1 className="text-2xl font-bold">Products & inventory</h1>
@@ -23,8 +35,26 @@ export default async function AdminProducts() {
         Inventory counts here are the single source of truth. Changes sync to Etsy automatically.
       </p>
 
+      <div className="mt-4 flex gap-2 text-sm">
+        <Link
+          href="/admin/products"
+          className={`rounded-full px-3 py-1 font-semibold ${!lowOnly ? "bg-sage/20 text-sage" : "bg-charcoal/5 text-muted"}`}
+        >
+          All ({products.length})
+        </Link>
+        <Link
+          href="/admin/products?low=1"
+          className={`rounded-full px-3 py-1 font-semibold ${lowOnly ? "bg-terracotta/20 text-terracotta" : "bg-charcoal/5 text-muted"}`}
+        >
+          Low / out of stock ({lowCount})
+        </Link>
+      </div>
+
       <div className="mt-6 space-y-4">
-        {products.map((p) => (
+        {shown.length === 0 && (
+          <p className="text-muted">{lowOnly ? "Nothing low on stock right now. 🎉" : "No products yet."}</p>
+        )}
+        {shown.map((p) => (
           <div key={p.id} className="card p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -55,7 +85,7 @@ export default async function AdminProducts() {
                     </form>
                     <form action={correctVariantStock} className="flex items-center gap-1">
                       <input type="hidden" name="variantId" value={v.id} />
-                      <input name="absolute" type="number" min={0} placeholder="set to" className="w-20 rounded border border-charcoal/20 px-2 py-1 text-sm" aria-label="Set exact quantity" />
+                      <input name="absolute" type="number" min={0} required placeholder="set to" className="w-20 rounded border border-charcoal/20 px-2 py-1 text-sm" aria-label="Set exact quantity" />
                       <button className="btn-secondary px-2 py-1 text-xs" type="submit">Set</button>
                     </form>
                   </div>

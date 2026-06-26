@@ -67,6 +67,44 @@ export async function releaseOrder(orderId: string): Promise<boolean> {
   return released;
 }
 
+const REFUNDABLE = ["paid", "fulfilled", "shipped"];
+
+/**
+ * Mark a refundable order `refunded` and restore its inventory EXACTLY once
+ * (idempotent: a second call returns false). The Stripe refund and the customer
+ * email are the caller's job (the admin action); this is the inventory-safe core,
+ * separated so it can be tested without Stripe or an auth context.
+ */
+export async function refundRestock(orderId: string): Promise<boolean> {
+  const order = await prisma.order.findUnique({ where: { id: orderId }, include: { items: true } });
+  if (!order || !REFUNDABLE.includes(order.status)) return false;
+
+  const did = await prisma.$transaction(async (tx) => {
+    const claim = await tx.order.updateMany({
+      where: { id: orderId, status: { in: REFUNDABLE } },
+      data: { status: "refunded" },
+    });
+    if (claim.count === 0) return false; // already refunded by a concurrent caller
+    for (const item of order.items) {
+      await addStock(
+        item.variantId,
+        item.quantity,
+        { reason: "manual_correction", channel: "system", referenceId: orderId, note: "Refunded order — stock restored" },
+        tx
+      );
+    }
+    return true;
+  });
+
+  if (did) {
+    for (const item of order.items) {
+      const v = await prisma.variant.findUnique({ where: { id: item.variantId } });
+      if (v?.etsyListingId) await queueEtsyPush(v.id, v.quantity).catch(() => {});
+    }
+  }
+  return did;
+}
+
 /**
  * Backstop sweeper: release any `pending` order older than the hold window. Run
  * from the cron so a missed Stripe expiry webhook can't permanently lock stock.

@@ -1,11 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/money";
+import { OrderActions } from "@/components/admin/OrderActions";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminOrders() {
   const orders = await prisma.order.findMany({
-    where: { status: { in: ["paid", "fulfilled", "refunded"] } },
+    where: { status: { in: ["paid", "fulfilled", "shipped", "refunded"] } },
     include: { items: true },
     orderBy: { createdAt: "desc" },
     take: 100,
@@ -41,6 +42,13 @@ export default async function AdminOrders() {
               {o.shippingAddress && (
                 <p className="mt-2 text-xs text-muted">Ship to: {o.shippingAddress}</p>
               )}
+              {o.trackingNumber && (
+                <p className="mt-1 text-xs text-muted">
+                  Shipped{o.shippedAt ? ` ${o.shippedAt.toLocaleDateString()}` : ""} · {o.carrier ? `${o.carrier} ` : ""}
+                  {o.trackingNumber}
+                </p>
+              )}
+              <OrderActions orderId={o.id} status={o.status} />
             </div>
           ))}
         </div>

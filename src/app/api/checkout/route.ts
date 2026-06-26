@@ -5,6 +5,7 @@ import { stripe } from "@/lib/stripe";
 import { flags, siteConfig, tunables } from "@/lib/config";
 import { isLowStock, queueEtsyPush, tryReserve } from "@/lib/inventory";
 import { jitEtsyStockOk } from "@/lib/etsy/sync";
+import { releaseOrder } from "@/lib/orders";
 
 export const runtime = "nodejs";
 
@@ -108,41 +109,60 @@ export async function POST(req: NextRequest) {
   }
 
   // 4) Create the Stripe Checkout Session.
+  // Shipping: admin-configurable flat rate; default is the real Etsy rate ($4.99).
   const flatShipping = await prisma.setting.findUnique({ where: { key: "shipping_flat_cents" } });
-  const shippingCents = flatShipping ? Number(flatShipping.value) : 550; // PLACEHOLDER default $5.50
+  const shippingCents = flatShipping ? Number(flatShipping.value) : 499;
+  // Sales tax: OFF unless the owner has both enabled the setting AND configured
+  // Stripe Tax on the account (origin address + product tax codes). Enabling the
+  // setting without that Stripe setup would make checkout error, so it stays off
+  // by default — see the go-live runbook.
+  const taxSetting = await prisma.setting.findUnique({ where: { key: "sales_tax_enabled" } });
+  const taxEnabled = taxSetting?.value === "true";
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    line_items: items.map((line) => {
-      const v = byId.get(line.variantId)!;
-      return {
-        quantity: line.quantity,
-        price_data: {
-          currency: "usd",
-          unit_amount: v.priceCents,
-          product_data: {
-            name: `${v.product.title}${v.name !== "Default" ? `, ${v.name}` : ""}`,
+  let session;
+  try {
+    session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      line_items: items.map((line) => {
+        const v = byId.get(line.variantId)!;
+        return {
+          quantity: line.quantity,
+          price_data: {
+            currency: "usd",
+            unit_amount: v.priceCents,
+            product_data: {
+              name: `${v.product.title}${v.name !== "Default" ? `, ${v.name}` : ""}`,
+            },
+          },
+        };
+      }),
+      shipping_address_collection: { allowed_countries: ["US", "CA"] },
+      shipping_options: [
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: { amount: shippingCents, currency: "usd" },
+            display_name: "Standard shipping",
           },
         },
-      };
-    }),
-    shipping_address_collection: { allowed_countries: ["US", "CA"] },
-    shipping_options: [
-      {
-        shipping_rate_data: {
-          type: "fixed_amount",
-          fixed_amount: { amount: shippingCents, currency: "usd" },
-          display_name: "Standard shipping",
-        },
-      },
-    ],
-    phone_number_collection: { enabled: false },
-    automatic_tax: { enabled: false },
-    metadata: { orderId },
-    success_url: `${siteConfig.url}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${siteConfig.url}/checkout/cancelled`,
-    expires_at: Math.floor(Date.now() / 1000) + 60 * 30, // 30 min hold
-  });
+      ],
+      phone_number_collection: { enabled: false },
+      automatic_tax: { enabled: taxEnabled },
+      metadata: { orderId },
+      success_url: `${siteConfig.url}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${siteConfig.url}/checkout/cancelled`,
+      expires_at: Math.floor(Date.now() / 1000) + 60 * 30, // 30 min hold
+    });
+  } catch (err) {
+    // Stripe failed AFTER we reserved stock — release it immediately so an
+    // unrecoverable order doesn't lock one-of-a-few items until the sweeper runs.
+    await releaseOrder(orderId).catch(() => {});
+    console.error("stripe session create failed", err);
+    return NextResponse.json(
+      { error: "We couldn't start checkout. Your cart wasn't charged — please try again." },
+      { status: 502 }
+    );
+  }
 
   // Link the session to the order so the webhook can finalize it.
   await prisma.order.update({ where: { id: orderId }, data: { stripeSessionId: session.id } });
