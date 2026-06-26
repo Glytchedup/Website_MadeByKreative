@@ -10,9 +10,11 @@
 // sales (qty dropped, handled by receipts) during reconciliation.
 // ===========================================================================
 
+import { Prisma } from "@prisma/client";
 import { prisma } from "../prisma";
 import { tunables } from "../config";
 import { decodeEntities } from "../html";
+import { sendOversellAlert } from "../email";
 import {
   addStock,
   forceDecrement,
@@ -20,6 +22,7 @@ import {
 } from "../inventory";
 import {
   EtsyNotConnectedError,
+  type EtsyReceipt,
   getActiveListings,
   getListingImages,
   getListingInventory,
@@ -302,18 +305,77 @@ async function syncCollectionsFromEtsy() {
 
 // -------- INVENTORY: Etsy sale -> Site (receipt polling, idempotent) -------
 
+// Thrown inside a receipt's transaction when one of its transactions can't be
+// matched to a variant. Aborts the WHOLE receipt (all-or-nothing) so its
+// decrements aren't partially applied and the receipt is retried later.
+class UnmappedReceiptError extends Error {
+  constructor(public listingId: number | string, public productId?: number | string | null) {
+    super(`unmapped:${listingId}`);
+  }
+}
+
+// A single receipts page caps at 100 (Etsy's max); an established shop — or any
+// period accumulating >100 sales between polls — would silently drop everything
+// past the first page if we didn't paginate. We fetch the COMPLETE set so the
+// cursor can advance to the newest processed receipt without losing anything that
+// sits beyond a page, REGARDLESS of Etsy's result ordering (we don't rely on a
+// sort param the receipts endpoint may not honor).
+const RECEIPT_PAGE_SIZE = 100;
+const MAX_RECEIPT_PAGES = 500; // pure infinite-loop backstop (~50k receipts/poll)
+
+// Thrown if pagination blows past the backstop. We fail the poll LOUDLY (cursor
+// left unadvanced, retried next run) rather than silently dropping the remainder.
+class ReceiptPageGuardError extends Error {
+  constructor(public fetched: number) {
+    super(`receipt pagination exceeded ${MAX_RECEIPT_PAGES} pages after ${fetched} receipts`);
+  }
+}
+
+/** Fetch ALL receipts created at/after `minCreated`, paging until exhausted. */
+async function fetchAllReceiptsSince(minCreated?: number): Promise<EtsyReceipt[]> {
+  const receipts: EtsyReceipt[] = [];
+  let offset = 0;
+  for (let pages = 0; ; pages++) {
+    if (pages >= MAX_RECEIPT_PAGES) throw new ReceiptPageGuardError(receipts.length);
+    const page = await getShopReceipts(minCreated, RECEIPT_PAGE_SIZE, offset);
+    receipts.push(...page.results);
+    offset += page.results.length;
+    if (page.results.length < RECEIPT_PAGE_SIZE) break; // reached the end (short page)
+    if (offset >= page.count) break; // covered everything Etsy reported
+  }
+  return receipts;
+}
+
+// True if a write failed because the row already exists (unique constraint).
+// Used so a concurrent poll that already inserted the ProcessedEtsyReceipt PK is
+// treated as "already processed" rather than crashing this poll.
+function isUniqueViolation(err: unknown): boolean {
+  return err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002";
+}
+
 /**
  * Poll Etsy receipts and decrement the ledger for each NEW receipt. Idempotent:
  * a ProcessedEtsyReceipt row (keyed on receipt_id) is written inside the same
  * transaction, so re-polling the same receipt is a no-op.
+ *
+ * A receipt is applied ALL-OR-NOTHING. If any of its transactions can't be
+ * mapped to one of our variants, the whole receipt's transaction is rolled back
+ * and the receipt is left UNprocessed (and the cursor is not advanced past it),
+ * so it is retried on the next poll once the listing↔variant mapping exists —
+ * otherwise a real Etsy sale's decrement would be silently lost forever.
  */
-export async function pollEtsyReceipts(): Promise<{ processed: number; baseline?: boolean }> {
+export async function pollEtsyReceipts(): Promise<{
+  processed: number;
+  unmapped?: number;
+  oversells?: number;
+  baseline?: boolean;
+}> {
   if (!(await isConnected())) throw new EtsyNotConnectedError();
   const state = await prisma.etsySyncState.findUnique({ where: { id: "singleton" } });
   const firstRun = state?.lastReceiptCreatedTs == null;
   const minCreated = state?.lastReceiptCreatedTs ?? undefined;
 
-  const page = await getShopReceipts(minCreated, 50);
+  const receipts = await fetchAllReceiptsSince(minCreated);
   let processed = 0;
   let maxTs = state?.lastReceiptCreatedTs ?? 0;
 
@@ -321,8 +383,10 @@ export async function pollEtsyReceipts(): Promise<{ processed: number; baseline?
   // every past sale, so we must NOT decrement for historical receipts. Instead we
   // record them as processed and set the cursor forward, so only sales that happen
   // AFTER connecting are applied. Without this, the initial sync double-counts.
+  // We paginate ALL history here so an established shop's older receipts aren't
+  // left un-baselined (and then double-counted later).
   if (firstRun) {
-    for (const receipt of page.results) {
+    for (const receipt of receipts) {
       maxTs = Math.max(maxTs, receipt.created_timestamp);
       await prisma.processedEtsyReceipt.create({
         data: { receiptId: String(receipt.receipt_id), raw: "baseline (not decremented)" },
@@ -333,74 +397,186 @@ export async function pollEtsyReceipts(): Promise<{ processed: number; baseline?
     await syncLog(
       "etsy_to_site",
       "receipt_poll",
-      `Baseline established: ${page.results.length} historical receipt(s) marked processed (not decremented).`
+      `Baseline established: ${receipts.length} historical receipt(s) marked processed (not decremented).`
     );
     return { processed: 0, baseline: true };
   }
 
-  for (const receipt of page.results) {
-    maxTs = Math.max(maxTs, receipt.created_timestamp);
+  // Oversell events collected while applying receipts; alerts are sent AFTER the
+  // DB work (never email from inside a transaction).
+  const oversells: { variantId: string; receiptId: string; newQty: number; detail: string }[] = [];
+  // Smallest timestamp of a receipt we could NOT fully process this run; the
+  // cursor must not advance past it so it is re-fetched next poll.
+  let earliestUnmappedTs: number | null = null;
+  let unmapped = 0;
+
+  for (const receipt of receipts) {
     const already = await prisma.processedEtsyReceipt.findUnique({
       where: { receiptId: String(receipt.receipt_id) },
     });
-    if (already) continue; // idempotent guard
+    if (already) {
+      maxTs = Math.max(maxTs, receipt.created_timestamp); // already done — safe to pass
+      continue; // idempotent guard
+    }
 
-    await prisma.$transaction(async (tx) => {
-      // Record the receipt FIRST inside the txn; the unique PK guarantees that
-      // two concurrent polls can't both apply the same receipt.
-      await tx.processedEtsyReceipt.create({
-        data: { receiptId: String(receipt.receipt_id), raw: JSON.stringify(receipt) },
-      });
-
-      for (const t of receipt.transactions) {
-        // Match the transaction to one of our variants.
-        const variant = await tx.variant.findFirst({
-          where: {
-            etsyListingId: String(t.listing_id),
-            ...(t.product_id ? { etsyProductId: String(t.product_id) } : {}),
-          },
-        });
-        if (!variant) {
-          await syncLog(
-            "etsy_to_site",
-            "receipt_unmapped",
-            `Receipt ${receipt.receipt_id}: no variant for listing ${t.listing_id}`,
-            "warn",
-            t
-          );
-          continue;
-        }
-        const { newQty, wentNegative } = await forceDecrement(variant.id, t.quantity, {
-          reason: "etsy_sale",
-          channel: "etsy",
-          referenceId: String(receipt.receipt_id),
-          note: `Etsy receipt ${receipt.receipt_id}`,
-        }, tx);
-
-        // Keep our "last seen on Etsy" in step so reconciliation isn't confused.
-        await tx.variant.update({
-          where: { id: variant.id },
-          data: { etsyLastSeenQty: Math.max(newQty, 0) },
+    const receiptOversells: typeof oversells = [];
+    try {
+      await prisma.$transaction(async (tx) => {
+        // Record the receipt FIRST inside the txn; the unique PK guarantees that
+        // two concurrent polls can't both apply the same receipt. If we abort
+        // below (unmapped), this insert rolls back too, leaving it unprocessed.
+        await tx.processedEtsyReceipt.create({
+          data: { receiptId: String(receipt.receipt_id), raw: JSON.stringify(receipt) },
         });
 
-        if (wentNegative) {
-          await tx.syncConflict.create({
-            data: {
-              variantId: variant.id,
-              type: "oversell",
-              siteQty: newQty,
-              detail: `Etsy sale on receipt ${receipt.receipt_id} drove stock negative — likely sold on both channels.`,
+        for (const t of receipt.transactions) {
+          // Match the transaction to one of our variants.
+          const variant = await tx.variant.findFirst({
+            where: {
+              etsyListingId: String(t.listing_id),
+              ...(t.product_id ? { etsyProductId: String(t.product_id) } : {}),
             },
           });
+          // All-or-nothing: an unmapped line aborts the entire receipt so its
+          // decrement is never silently dropped — it retries once mapped.
+          if (!variant) throw new UnmappedReceiptError(t.listing_id, t.product_id);
+
+          const { newQty, wentNegative } = await forceDecrement(variant.id, t.quantity, {
+            reason: "etsy_sale",
+            channel: "etsy",
+            referenceId: String(receipt.receipt_id),
+            note: `Etsy receipt ${receipt.receipt_id}`,
+          }, tx);
+
+          // Keep our "last seen on Etsy" in step so reconciliation isn't confused.
+          await tx.variant.update({
+            where: { id: variant.id },
+            data: { etsyLastSeenQty: Math.max(newQty, 0) },
+          });
+
+          if (wentNegative) {
+            await tx.syncConflict.create({
+              data: {
+                variantId: variant.id,
+                type: "oversell",
+                siteQty: newQty,
+                detail: `Etsy sale on receipt ${receipt.receipt_id} drove stock to ${newQty} — likely sold on both channels.`,
+              },
+            });
+            receiptOversells.push({
+              variantId: variant.id,
+              receiptId: String(receipt.receipt_id),
+              newQty,
+              detail: `An Etsy sale (receipt ${receipt.receipt_id}) drove stock to ${newQty}. The same one-of-a-few item likely sold on both the site and Etsy.`,
+            });
+          }
         }
+      }, { timeout: 15000 }); // give the txn headroom
+
+      // Committed cleanly.
+      maxTs = Math.max(maxTs, receipt.created_timestamp);
+      oversells.push(...receiptOversells);
+      processed++;
+    } catch (err) {
+      if (err instanceof UnmappedReceiptError) {
+        unmapped++;
+        earliestUnmappedTs =
+          earliestUnmappedTs == null
+            ? receipt.created_timestamp
+            : Math.min(earliestUnmappedTs, receipt.created_timestamp);
+        await syncLog(
+          "etsy_to_site",
+          "receipt_unmapped",
+          `Receipt ${receipt.receipt_id}: no variant for listing ${err.listingId}` +
+            `${err.productId ? `/product ${err.productId}` : ""}. Left UNprocessed and will retry ` +
+            `after the listing↔variant mapping exists — run a content sync / confirm the mapping.`,
+          "error",
+          { receiptId: receipt.receipt_id, listingId: err.listingId, productId: err.productId }
+        );
+        // Do NOT advance the cursor past this receipt and do NOT mark it
+        // processed (the transaction rolled back the ProcessedEtsyReceipt row).
+      } else if (isUniqueViolation(err)) {
+        // A concurrent poll inserted this receipt's PK first; under Postgres our
+        // INSERT blocked until that txn COMMITTED, so the receipt is now fully
+        // applied by the other run. Treat as already-processed: skip, don't abort.
+        maxTs = Math.max(maxTs, receipt.created_timestamp);
+        continue;
+      } else {
+        throw err;
       }
-    }, { timeout: 15000 }); // SQLite can be slow; give the txn headroom
-    processed++;
+    }
   }
 
-  await touchState({ lastReceiptPollAt: new Date(), lastReceiptCreatedTs: maxTs || undefined });
-  if (processed) await syncLog("etsy_to_site", "receipt_poll", `Processed ${processed} receipt(s)`);
-  return { processed };
+  // Advance the cursor, but never PAST the earliest still-unmapped receipt so it
+  // is re-fetched next poll. A slightly rewound cursor is safe: already-applied
+  // receipts are skipped by the ProcessedEtsyReceipt idempotency guard.
+  let cursor = maxTs;
+  if (earliestUnmappedTs != null) cursor = Math.min(cursor, earliestUnmappedTs - 1);
+  await touchState({ lastReceiptPollAt: new Date(), lastReceiptCreatedTs: cursor || undefined });
+
+  // Alert the maker about any post-the-fact oversell, and flag the affected order.
+  for (const os of oversells) {
+    const order = await prisma.order.findFirst({
+      where: {
+        oversellFlag: false,
+        status: { in: ["paid", "pending", "fulfilled"] },
+        items: { some: { variantId: os.variantId } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    if (order) {
+      await prisma.order.update({ where: { id: order.id }, data: { oversellFlag: true } });
+    }
+    await sendOversellAlert({
+      orderId: order?.id ?? `(no matching site order — variant ${os.variantId})`,
+      detail: os.detail,
+    }).catch((e) =>
+      syncLog("system", "oversell_alert", `Failed to send oversell alert: ${String(e)}`, "error")
+    );
+  }
+
+  if (processed || unmapped)
+    await syncLog(
+      "etsy_to_site",
+      "receipt_poll",
+      `Processed ${processed} receipt(s)${unmapped ? `, ${unmapped} left unmapped (will retry)` : ""}` +
+        `${oversells.length ? `, ${oversells.length} oversell alert(s)` : ""}`
+    );
+  return { processed, unmapped, oversells: oversells.length };
+}
+
+// -------- Live Etsy quantity (shared by reconcile / JIT / conflict resolve) -
+
+/**
+ * Live Etsy quantity for a single variant's mapped offering. Throws if Etsy is
+ * unreachable. Single source of this fetch so reconcile, the JIT guard, and
+ * conflict resolution can't drift apart.
+ */
+async function fetchLiveEtsyQuantity(variant: {
+  etsyListingId: string | null;
+  etsyProductId: string | null;
+}): Promise<number> {
+  if (!variant.etsyListingId) throw new Error("variant is not mapped to an Etsy listing");
+  if (variant.etsyProductId) {
+    const inv = await getListingInventory(variant.etsyListingId);
+    const p = inv.products.find((pp) => String(pp.product_id) === variant.etsyProductId);
+    return p?.offerings?.[0]?.quantity ?? 0;
+  }
+  return getLiveListingQuantity(variant.etsyListingId);
+}
+
+/** Live Etsy quantity, or null if not mapped / not connected / unreachable. */
+export async function liveEtsyQuantitySafe(variant: {
+  etsyListingId: string | null;
+  etsyProductId: string | null;
+}): Promise<number | null> {
+  if (!variant.etsyListingId) return null;
+  if (!(await isConnected())) return null;
+  try {
+    return await fetchLiveEtsyQuantity(variant);
+  } catch {
+    return null;
+  }
 }
 
 // -------- INVENTORY: reconciliation (detect restocks & mismatches) ---------
@@ -426,13 +602,7 @@ export async function reconcileInventory(): Promise<{ restocks: number; conflict
   for (const v of variants) {
     let liveQty: number;
     try {
-      if (v.etsyProductId) {
-        const inv = await getListingInventory(v.etsyListingId!);
-        const p = inv.products.find((pp) => String(pp.product_id) === v.etsyProductId);
-        liveQty = p?.offerings?.[0]?.quantity ?? 0;
-      } else {
-        liveQty = await getLiveListingQuantity(v.etsyListingId!);
-      }
+      liveQty = await fetchLiveEtsyQuantity(v);
     } catch (err) {
       await syncLog("etsy_to_site", "reconcile_fetch", `Listing ${v.etsyListingId}: ${String(err)}`, "warn");
       continue;
@@ -554,14 +724,7 @@ export async function jitEtsyStockOk(
   if (!variant.etsyListingId) return { ok: true }; // not on Etsy
   if (!(await isConnected())) return { ok: true }; // not connected -> ledger guards
   try {
-    let liveQty: number;
-    if (variant.etsyProductId) {
-      const inv = await getListingInventory(variant.etsyListingId);
-      const p = inv.products.find((pp) => String(pp.product_id) === variant.etsyProductId);
-      liveQty = p?.offerings?.[0]?.quantity ?? 0;
-    } else {
-      liveQty = await getLiveListingQuantity(variant.etsyListingId);
-    }
+    const liveQty = await fetchLiveEtsyQuantity(variant);
     if (liveQty < requestedQty) {
       return { ok: false, liveQty, reason: "Just sold out on our other shop." };
     }

@@ -160,6 +160,17 @@ model OrderItem {
   @@index([orderId])
 }
 
+// Idempotency / audit log for Stripe webhook events: one row per processed
+// `event.id`. The order-status guards in the webhook are the primary idempotency
+// mechanism; this is a defense-in-depth fast-path (skip already-processed events)
+// and an audit trail. Written AFTER successful processing so a crash mid-handler
+// safely re-runs on Stripe's redelivery (the handlers are idempotent).
+model ProcessedStripeEvent {
+  eventId     String   @id
+  type        String
+  processedAt DateTime @default(now())
+}
+
 // ---------------------------------------------------------------------------
 // Etsy sync infrastructure
 // ---------------------------------------------------------------------------

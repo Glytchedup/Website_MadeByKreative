@@ -260,9 +260,17 @@ export interface EtsyReceipt {
   }[];
 }
 
-/** Receipts created at/after `minCreated` (unix seconds). Polled for Etsy sales. */
-export async function getShopReceipts(minCreated?: number, limit = 50) {
-  const params = new URLSearchParams({ limit: String(limit), was_paid: "true" });
+/**
+ * Receipts created at/after `minCreated` (unix seconds). Polled for Etsy sales.
+ * `offset` paginates: a single page caps at `limit` (Etsy max 100), so callers
+ * that must not miss any receipt page forward with offset until exhausted.
+ */
+export async function getShopReceipts(minCreated?: number, limit = 50, offset = 0) {
+  const params = new URLSearchParams({
+    limit: String(limit),
+    offset: String(offset),
+    was_paid: "true",
+  });
   if (minCreated) params.set("min_created", String(minCreated));
   return etsyJson<{ count: number; results: EtsyReceipt[] }>(
     `/shops/${shopId()}/receipts?${params.toString()}`

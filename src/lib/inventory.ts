@@ -121,24 +121,81 @@ export async function addStock(
 }
 
 /**
+ * Thrown by setStock when `opts.expectedCurrent` is supplied and the variant's
+ * quantity has changed since the caller observed it (a concurrent sale slipped
+ * in). Callers that pass `expectedCurrent` should treat this as "stop — the
+ * basis for this absolute write is stale" rather than retrying blindly.
+ */
+export class StockChangedError extends Error {
+  constructor(public variantId: string) {
+    super(`setStock: quantity changed under us for variant ${variantId}`);
+    this.name = "StockChangedError";
+  }
+}
+
+/**
  * Set stock to an absolute value (admin "correct the count" action). Computes
  * the delta vs current and records it. Use sparingly — prefer add/reserve.
+ *
+ * ATOMICITY: read + write + ledger run inside one transaction with a
+ * compare-and-swap guard. The update only applies if `quantity` is still what we
+ * read; if a concurrent reserve/decrement changed it, we re-read and retry. This
+ * prevents a read-then-write race where an absolute write could clobber a
+ * concurrent decrement and silently "restore" a sold unit (an oversell).
+ *
+ * `opts.expectedCurrent`: when set, the write is a STRICT compare-and-swap
+ * against that exact value (no retry). If the row no longer holds it, throws
+ * `StockChangedError`. This lets a caller that based `absoluteQty` on an earlier
+ * read/external fetch (e.g. conflict resolution applying a live Etsy count) abort
+ * rather than resurrect a unit that sold between the read and the write.
  */
 export async function setStock(
   variantId: string,
   absoluteQty: number,
-  opts: { reason: LedgerReason; channel: LedgerChannel; note?: string },
+  opts: { reason: LedgerReason; channel: LedgerChannel; note?: string; expectedCurrent?: number },
   db: Db = prisma
 ): Promise<number> {
   if (absoluteQty < 0) throw new Error("setStock: quantity cannot be negative");
-  const current = await db.variant.findUniqueOrThrow({ where: { id: variantId } });
-  const delta = absoluteQty - current.quantity;
-  if (delta === 0) return current.quantity;
-  await db.variant.update({ where: { id: variantId }, data: { quantity: absoluteQty } });
-  await db.ledgerEntry.create({
-    data: { variantId, delta, reason: opts.reason, channel: opts.channel, note: opts.note },
-  });
-  return absoluteQty;
+
+  const apply = async (tx: Db): Promise<number> => {
+    // Strict CAS against the caller-supplied basis: apply only if the row is
+    // still exactly that value, else abort (the basis is stale).
+    if (opts.expectedCurrent != null) {
+      const delta = absoluteQty - opts.expectedCurrent;
+      const res = await tx.variant.updateMany({
+        where: { id: variantId, quantity: opts.expectedCurrent },
+        data: { quantity: absoluteQty },
+      });
+      if (res.count === 0) throw new StockChangedError(variantId);
+      if (delta !== 0) {
+        await tx.ledgerEntry.create({
+          data: { variantId, delta, reason: opts.reason, channel: opts.channel, note: opts.note },
+        });
+      }
+      return absoluteQty;
+    }
+
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const current = await tx.variant.findUniqueOrThrow({ where: { id: variantId } });
+      const delta = absoluteQty - current.quantity;
+      if (delta === 0) return current.quantity;
+      // CAS: only write if the row is still at the value we just read.
+      const res = await tx.variant.updateMany({
+        where: { id: variantId, quantity: current.quantity },
+        data: { quantity: absoluteQty },
+      });
+      if (res.count === 0) continue; // raced with another writer — re-read and retry
+      await tx.ledgerEntry.create({
+        data: { variantId, delta, reason: opts.reason, channel: opts.channel, note: opts.note },
+      });
+      return absoluteQty;
+    }
+    throw new Error("setStock: write contention, retries exhausted");
+  };
+
+  // Use the caller's transaction if one was passed; otherwise open our own so the
+  // read + guarded update + ledger row commit together.
+  return db === prisma ? prisma.$transaction((tx) => apply(tx)) : apply(db);
 }
 
 /** Queue a quantity push to Etsy (deduped: replaces any pending push). */
