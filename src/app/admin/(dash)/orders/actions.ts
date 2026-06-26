@@ -7,6 +7,8 @@ import { requireAdmin } from "@/lib/admin";
 import { refundRestock } from "@/lib/orders";
 import { sendRefundConfirmation, sendShippingNotification } from "@/lib/email";
 
+const REFUNDABLE = ["paid", "fulfilled", "shipped"];
+
 /**
  * Refund an order: issue the Stripe refund, then restore inventory + mark refunded.
  *
@@ -25,7 +27,12 @@ export async function refundOrder(formData: FormData) {
   if (!orderId) return;
 
   const order = await prisma.order.findUnique({ where: { id: orderId } });
-  if (!order) return;
+  // Guard up front so we don't call Stripe on an order that isn't refundable
+  // (already refunded / never paid). refundRestock re-checks atomically too.
+  if (!order || !REFUNDABLE.includes(order.status)) {
+    revalidatePath("/admin/orders");
+    return;
+  }
 
   // 1) Issue the Stripe refund (idempotent). If Stripe is unconfigured or the
   //    order has no PaymentIntent (e.g. a manual/test order), skip — the maker

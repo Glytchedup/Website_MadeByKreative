@@ -5,11 +5,26 @@ import { useEffect, useState } from "react";
 
 declare global {
   interface Window {
-    gtag?: (...args: unknown[]) => void;
+    dataLayer?: unknown[];
   }
 }
 
 const KEY = "mbk_consent_v1";
+
+// Push a consent update in the exact format GA expects, via a local gtag shim
+// that mirrors GA's own (`dataLayer.push(arguments)`). This works even if GA's
+// library script hasn't loaded yet — the command queues on dataLayer and GA
+// applies it on load — so a returning visitor's prior "granted" choice isn't lost
+// to a script-load race.
+function grantAnalyticsConsent() {
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    // eslint-disable-next-line prefer-rest-params
+    window.dataLayer!.push(arguments);
+  }
+  // @ts-expect-error gtag's variadic arguments shim is intentionally untyped
+  gtag("consent", "update", { analytics_storage: "granted" });
+}
 
 /**
  * Lightweight cookie-consent banner that gates GA4 analytics cookies via Google
@@ -23,7 +38,7 @@ export function CookieConsent() {
   useEffect(() => {
     const choice = localStorage.getItem(KEY);
     if (choice === "granted") {
-      window.gtag?.("consent", "update", { analytics_storage: "granted" });
+      grantAnalyticsConsent();
     } else if (!choice) {
       setShow(true);
     }
@@ -31,7 +46,7 @@ export function CookieConsent() {
 
   function decide(granted: boolean) {
     localStorage.setItem(KEY, granted ? "granted" : "denied");
-    if (granted) window.gtag?.("consent", "update", { analytics_storage: "granted" });
+    if (granted) grantAnalyticsConsent();
     setShow(false);
   }
 

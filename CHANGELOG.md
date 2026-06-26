@@ -3,6 +3,44 @@
 All significant decisions and build steps for the MadeByKreative storefront. Entries note
 where judgment was exercised and why.
 
+## [0.6.0] — Full launch-readiness pass (whole-app sweep → 8 batches → review)
+
+A whole-application adversarial sweep (8 area auditors + verification) surfaced 18 confirmed
+bugs + 47 readiness tasks; all reversible work was implemented in 8 ordered batches, then
+re-reviewed by a 6-dimension adversarial pass (zero must-fix bugs confirmed; a few low-severity
+robustness wins applied). `next build` clean (19 routes), `npm run smoke` 27/27,
+`npm run sync:test` 6/6.
+
+- **Config/build:** Node `engines` + `.nvmrc`; documented prod `prisma db push` schema-apply
+  step; `ADMIN_SESSION_SECRET` required in prod; Stripe **test-vs-live** key guard (keyed on
+  `VERCEL_ENV` so local builds aren't broken); `scripts/check-secrets.sh` + `npm run check:secrets`.
+- **Security:** shared in-memory IP **rate limiter** on contact/newsletter/admin-login (429 +
+  Retry-After, shorter-window-first short-circuit); tighter zod bounds; **HTML-escaping** of all
+  email templates + JSON-LD; Etsy OAuth PKCE/state cookies cleared on every outcome.
+- **Payments/fulfillment:** `Order.paymentIntentId` / `amountTaxCents` / shipping fields; webhook
+  captures them (handles string or expanded PaymentIntent); **refund path** (`refundRestock`:
+  atomic, idempotent, inventory-restoring) + admin refund/fulfill/markShipped actions + shipping &
+  refund emails; checkout **releases reserved stock if Stripe session creation fails**; shipping
+  default **$4.99**; sales-tax capability behind a setting (off by default).
+- **Admin:** order action buttons (fulfill/ship/refund with confirm + pending states) + tracking
+  display; low-stock filter; required + server-side guards on set-qty and product title;
+  standalone-product image editor.
+- **Etsy:** bounded `EtsyPush` retry that escalates to a `qty_mismatch` conflict on give-up; sync
+  UI names the exact missing `ETSY_*` vars; multi-offering import warning; **mocked-client sync
+  integration test** (`scripts/sync-test.ts`) covering baseline / sale / idempotency /
+  unmapped-rollback / reconcile via a test seam.
+- **Storefront:** **cart clear-removes-item bug fixed** (clamp ≥1, removal only via Remove);
+  keyboard-operable Featured cards; modal focus-return; gallery-thumb aria labels; hero →
+  `next/Image` (LCP) + lazy-loaded below-fold images; storefront 404 page.
+- **SEO/legal/consent:** **Privacy + Terms pages** (drafts for review) + footer Legal links; GA4
+  **Consent Mode** (default-denied) + cookie banner (queues consent via dataLayer so it survives a
+  script-load race); clean, customer-ready policy fallback copy.
+- **Cleanups:** removed dead code; guarded `JSON.parse` in scripts; removed the misleading About
+  "edit in admin" note.
+- **`GO-LIVE.md`:** the owner-only launch runbook — provision, secrets, live Stripe (+ webhook +
+  tax/shipping), Resend, live Etsy OAuth, content/legal sign-off, DNS, and a pre-launch smoke list.
+  The only remaining work is these gated steps (live credentials, real money, legal facts, DNS).
+
 ## [0.5.1] — Independent (Codex) review round: 4 fixes + preventative hardening
 
 An independent adversarial review (Codex) of the `[0.5.0]` changes surfaced four issues. A first

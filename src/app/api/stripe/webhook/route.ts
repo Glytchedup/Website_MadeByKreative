@@ -46,9 +46,12 @@ export async function POST(req: NextRequest) {
               : null,
             totalCents: session.amount_total ?? order.totalCents,
             amountTaxCents: session.total_details?.amount_tax ?? 0,
-            // PaymentIntent id — needed to issue refunds later.
+            // PaymentIntent id — needed to issue refunds later. Handle both the
+            // default string id and a (rare) expanded PaymentIntent object.
             paymentIntentId:
-              typeof session.payment_intent === "string" ? session.payment_intent : null,
+              typeof session.payment_intent === "string"
+                ? session.payment_intent
+                : session.payment_intent?.id ?? null,
           };
 
           // Normal path: the order is still "pending" (stock was reserved at

@@ -47,12 +47,14 @@ export function enforceRateLimit(
   windows: { limit: number; windowMs: number }[]
 ): { ok: true } | { ok: false; retryAfterSec: number } {
   const ip = clientIp(req);
-  let worst = 0;
+  // Check windows in order; stop at the first that blocks so we don't consume a
+  // longer window's budget for a request that's already being rejected. Pass the
+  // shorter windows first.
   for (const w of windows) {
     const r = hit(`${scope}:${w.windowMs}:${ip}`, w.limit, w.windowMs);
-    if (!r.ok) worst = Math.max(worst, r.retryAfterSec);
+    if (!r.ok) return { ok: false, retryAfterSec: r.retryAfterSec };
   }
-  return worst > 0 ? { ok: false, retryAfterSec: worst } : { ok: true };
+  return { ok: true };
 }
 
 /** Standard 429 JSON response with a Retry-After header. */
