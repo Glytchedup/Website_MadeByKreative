@@ -33,6 +33,20 @@ import {
   updateListingInventory,
 } from "./client";
 
+// Test seam: the inventory-sync loop (receipts → reconcile → push) routes its
+// Etsy network calls through this mutable object so a test can inject a mock
+// client and exercise the full logic offline. Production uses the real client.
+const etsyClient = {
+  isConnected,
+  getShopReceipts,
+  getListingInventory,
+  getLiveListingQuantity,
+  updateListingInventory,
+};
+export function __setEtsyClientForTests(mock: Partial<typeof etsyClient>) {
+  Object.assign(etsyClient, mock);
+}
+
 // -------- logging ----------------------------------------------------------
 
 export async function syncLog(
@@ -84,7 +98,7 @@ export async function syncContentFromEtsy(): Promise<{
   archived: number;
   collections: number;
 }> {
-  if (!(await isConnected())) throw new EtsyNotConnectedError();
+  if (!(await etsyClient.isConnected())) throw new EtsyNotConnectedError();
   let imported = 0;
   let updated = 0;
   let offset = 0;
@@ -131,6 +145,19 @@ export async function syncContentFromEtsy(): Promise<{
       // Fetch inventory once: each size offering carries its OWN price, and we
       // need it for both new products and price refreshes on existing ones.
       const inv = await getListingInventory(listing.listing_id).catch(() => null);
+      // We map each Etsy `product` via its FIRST offering. Listings whose products
+      // carry multiple offerings need the maker to confirm the variant↔offering
+      // mapping after import — warn so it isn't mismapped silently.
+      const multiOffering = (inv?.products ?? []).filter((p) => (p.offerings?.length ?? 0) > 1);
+      if (multiOffering.length > 0) {
+        await syncLog(
+          "etsy_to_site",
+          "multi_offering",
+          `Listing ${listing.listing_id}: ${multiOffering.length} product(s) have multiple offerings; only the first is mapped. Confirm the variant↔offering mapping.`,
+          "warn",
+          { listingId: listing.listing_id }
+        );
+      }
       const offeringPrices = (inv?.products ?? [])
         .map((p) => priceToCents(p.offerings[0]?.price))
         .filter((c): c is number => c != null);
@@ -337,7 +364,7 @@ async function fetchAllReceiptsSince(minCreated?: number): Promise<EtsyReceipt[]
   let offset = 0;
   for (let pages = 0; ; pages++) {
     if (pages >= MAX_RECEIPT_PAGES) throw new ReceiptPageGuardError(receipts.length);
-    const page = await getShopReceipts(minCreated, RECEIPT_PAGE_SIZE, offset);
+    const page = await etsyClient.getShopReceipts(minCreated, RECEIPT_PAGE_SIZE, offset);
     receipts.push(...page.results);
     offset += page.results.length;
     if (page.results.length < RECEIPT_PAGE_SIZE) break; // reached the end (short page)
@@ -370,7 +397,7 @@ export async function pollEtsyReceipts(): Promise<{
   oversells?: number;
   baseline?: boolean;
 }> {
-  if (!(await isConnected())) throw new EtsyNotConnectedError();
+  if (!(await etsyClient.isConnected())) throw new EtsyNotConnectedError();
   const state = await prisma.etsySyncState.findUnique({ where: { id: "singleton" } });
   const firstRun = state?.lastReceiptCreatedTs == null;
   const minCreated = state?.lastReceiptCreatedTs ?? undefined;
@@ -558,11 +585,11 @@ async function fetchLiveEtsyQuantity(variant: {
 }): Promise<number> {
   if (!variant.etsyListingId) throw new Error("variant is not mapped to an Etsy listing");
   if (variant.etsyProductId) {
-    const inv = await getListingInventory(variant.etsyListingId);
+    const inv = await etsyClient.getListingInventory(variant.etsyListingId);
     const p = inv.products.find((pp) => String(pp.product_id) === variant.etsyProductId);
     return p?.offerings?.[0]?.quantity ?? 0;
   }
-  return getLiveListingQuantity(variant.etsyListingId);
+  return etsyClient.getLiveListingQuantity(variant.etsyListingId);
 }
 
 /** Live Etsy quantity, or null if not mapped / not connected / unreachable. */
@@ -571,7 +598,7 @@ export async function liveEtsyQuantitySafe(variant: {
   etsyProductId: string | null;
 }): Promise<number | null> {
   if (!variant.etsyListingId) return null;
-  if (!(await isConnected())) return null;
+  if (!(await etsyClient.isConnected())) return null;
   try {
     return await fetchLiveEtsyQuantity(variant);
   } catch {
@@ -590,7 +617,7 @@ export async function liveEtsyQuantitySafe(variant: {
  *                 conflict for the maker (never silently overwrite).
  */
 export async function reconcileInventory(): Promise<{ restocks: number; conflicts: number }> {
-  if (!(await isConnected())) throw new EtsyNotConnectedError();
+  if (!(await etsyClient.isConnected())) throw new EtsyNotConnectedError();
   const variants = await prisma.variant.findMany({
     where: { etsyListingId: { not: null } },
   });
@@ -657,11 +684,14 @@ export async function reconcileInventory(): Promise<{ restocks: number; conflict
 
 // -------- INVENTORY: Site -> Etsy (push queue) -----------------------------
 
+const MAX_PUSH_ATTEMPTS = 5;
+
 /** Process pending pushes: write the site's authoritative quantity to Etsy. */
-export async function processPushQueue(): Promise<{ done: number; failed: number }> {
-  if (!(await isConnected())) throw new EtsyNotConnectedError();
+export async function processPushQueue(): Promise<{ done: number; retried: number; failed: number }> {
+  if (!(await etsyClient.isConnected())) throw new EtsyNotConnectedError();
   const pending = await prisma.etsyPush.findMany({ where: { status: "pending" }, take: 50 });
   let done = 0;
+  let retried = 0;
   let failed = 0;
 
   for (const push of pending) {
@@ -675,7 +705,7 @@ export async function processPushQueue(): Promise<{ done: number; failed: number
       continue;
     }
     try {
-      const inv = await getListingInventory(variant.etsyListingId);
+      const inv = await etsyClient.getListingInventory(variant.etsyListingId);
       // Mutate the matching offering quantity, then PUT the whole object back.
       const products = inv.products.map((p) => {
         const isTarget = variant.etsyProductId
@@ -688,7 +718,7 @@ export async function processPushQueue(): Promise<{ done: number; failed: number
           ),
         };
       });
-      await updateListingInventory(variant.etsyListingId, products);
+      await etsyClient.updateListingInventory(variant.etsyListingId, products);
       await prisma.variant.update({
         where: { id: variant.id },
         data: { etsyLastSeenQty: Math.max(push.targetQty, 0) },
@@ -696,16 +726,50 @@ export async function processPushQueue(): Promise<{ done: number; failed: number
       await prisma.etsyPush.update({ where: { id: push.id }, data: { status: "done" } });
       done++;
     } catch (err) {
-      await prisma.etsyPush.update({
-        where: { id: push.id },
-        data: { status: "failed", attempts: push.attempts + 1, lastError: String(err) },
-      });
-      await syncLog("site_to_etsy", "push", `Push ${push.id} failed: ${String(err)}`, "error");
-      failed++;
+      const attempts = push.attempts + 1;
+      if (attempts < MAX_PUSH_ATTEMPTS) {
+        // Transient failure — re-enqueue for the next cycle (etsyFetch already
+        // retried 429/5xx inline; this covers longer outages). A newer push for
+        // the same variant still supersedes this one via queueEtsyPush.
+        await prisma.etsyPush.update({
+          where: { id: push.id },
+          data: { status: "pending", attempts, lastError: String(err) },
+        });
+        retried++;
+      } else {
+        // Give up auto-pushing after MAX attempts and surface the divergence as a
+        // conflict so it's visible and the maker can re-push or accept Etsy's count
+        // (instead of silently leaving the channels out of sync).
+        await prisma.etsyPush.update({
+          where: { id: push.id },
+          data: { status: "failed", attempts, lastError: String(err) },
+        });
+        const open = await prisma.syncConflict.findFirst({
+          where: { variantId: variant.id, type: "qty_mismatch", status: "open" },
+        });
+        if (!open) {
+          await prisma.syncConflict.create({
+            data: {
+              variantId: variant.id,
+              type: "qty_mismatch",
+              siteQty: variant.quantity,
+              detail: `Couldn't push quantity to Etsy after ${MAX_PUSH_ATTEMPTS} attempts (${String(err)}). Confirm the correct count.`,
+            },
+          });
+        }
+        await syncLog(
+          "site_to_etsy",
+          "push",
+          `Push ${push.id} permanently failed after ${MAX_PUSH_ATTEMPTS} attempts: ${String(err)}`,
+          "error"
+        );
+        failed++;
+      }
     }
   }
-  if (done || failed) await syncLog("site_to_etsy", "push_queue", `Done ${done}, failed ${failed}`);
-  return { done, failed };
+  if (done || retried || failed)
+    await syncLog("site_to_etsy", "push_queue", `Done ${done}, retried ${retried}, failed ${failed}`);
+  return { done, retried, failed };
 }
 
 // -------- JIT oversell guard (called at checkout) --------------------------
@@ -722,7 +786,7 @@ export async function jitEtsyStockOk(
   requestedQty: number
 ): Promise<{ ok: boolean; liveQty?: number; reason?: string }> {
   if (!variant.etsyListingId) return { ok: true }; // not on Etsy
-  if (!(await isConnected())) return { ok: true }; // not connected -> ledger guards
+  if (!(await etsyClient.isConnected())) return { ok: true }; // not connected -> ledger guards
   try {
     const liveQty = await fetchLiveEtsyQuantity(variant);
     if (liveQty < requestedQty) {
@@ -748,7 +812,7 @@ const CONTENT_REFRESH_MS = 60 * 60 * 1000; // 1 hour
 export async function runFullSync(
   opts: { forceContent?: boolean } = {}
 ): Promise<Record<string, unknown>> {
-  if (!(await isConnected())) {
+  if (!(await etsyClient.isConnected())) {
     return { connected: false, message: "Etsy not connected — sync skipped." };
   }
   const result: Record<string, unknown> = { connected: true };

@@ -12,6 +12,14 @@ export function Analytics() {
       <Script id="ga4" strategy="afterInteractive">
         {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
+// Consent Mode: default DENIED so no analytics cookies are set until the visitor
+// opts in via the cookie banner (CookieConsent updates this to granted).
+gtag('consent', 'default', {
+  ad_storage: 'denied',
+  ad_user_data: 'denied',
+  ad_personalization: 'denied',
+  analytics_storage: 'denied'
+});
 gtag('js', new Date());
 gtag('config', '${id}', { anonymize_ip: true });`}
       </Script>

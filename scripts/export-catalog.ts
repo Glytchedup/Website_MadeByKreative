@@ -2,6 +2,16 @@
 // offline pricing/SEO audit. Read-only.
 import { prisma } from "../src/lib/prisma";
 
+// Defensive parse of the JSON-string columns (never throw on malformed data).
+function safeArr(json: string | null): string[] {
+  try {
+    const v = JSON.parse(json || "[]");
+    return Array.isArray(v) ? v : [];
+  } catch {
+    return [];
+  }
+}
+
 async function main() {
   const products = await prisma.product.findMany({
     include: {
@@ -38,9 +48,9 @@ async function main() {
     etsyListingId: p.etsyListingId,
     descriptionLength: p.description.length,
     description: p.description,
-    tags: JSON.parse(p.tags || "[]"),
-    tagCount: (JSON.parse(p.tags || "[]") as string[]).length,
-    imageCount: (JSON.parse(p.images || "[]") as string[]).length,
+    tags: safeArr(p.tags),
+    tagCount: safeArr(p.tags).length,
+    imageCount: safeArr(p.images).length,
     seoTitle: p.seoTitle,
     seoDescription: p.seoDescription,
     titleLength: p.title.length,

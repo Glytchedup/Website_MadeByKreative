@@ -19,6 +19,7 @@
     "db:seed": "tsx --env-file=.env prisma/seed.ts",
     "etsy:sync": "tsx --env-file=.env scripts/run-sync.ts",
     "smoke": "tsx --env-file=.env scripts/smoke-test.ts",
+    "sync:test": "tsx --env-file=.env scripts/sync-test.ts",
     "check:secrets": "bash scripts/check-secrets.sh"
   },
   "prisma": {

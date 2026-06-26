@@ -34,6 +34,10 @@ const COLS: { title: string; links: { label: string; href: string; external?: bo
     { label: "Contact", href: "/contact" },
     { label: "Find us on Etsy", href: siteConfig.etsyShopUrl, external: true },
   ] },
+  { title: "Legal", links: [
+    { label: "Privacy Policy", href: "/privacy" },
+    { label: "Terms of Service", href: "/terms" },
+  ] },
 ];
 
 export function StoreFooter() {
